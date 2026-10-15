@@ -3,22 +3,22 @@ import AppKit
 import BudHoldCore
 
 @main
-struct BudHoldApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
-    var body: some Scene {
-        Settings {
-            EmptyView()
-        }
-    }
-}
-
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem!
     private var mainWindow: NSWindow?
-    private var globalKeyMonitor: Any?
     private var localKeyMonitor: Any?
+
+    /// 标记是否由顶部菜单栏图标点击触发的「真退出」
+    private var isTrueQuitRequested: Bool = false
+
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.setActivationPolicy(.regular)
+        app.run()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let vm = AppViewModel.shared
@@ -27,6 +27,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             vm.rustDeskMonitoringEnabled = true
         }
 
+        // 监听系统关机/注销事件，避免阻止 macOS 正常重启或关机
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willPowerOffNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.isTrueQuitRequested = true
+            }
+        }
+
+        setupApplicationMainMenu()
         setupStatusBarItem()
         setupEscapeKeyRestoreBrightness()
         openDashboardWindow()
@@ -46,6 +58,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return true
     }
 
+    /// 拦截底部 Dock 菜单「退出」或 ⌘Q：仅隐藏窗口与 Dock 图标并转入后台状态栏常驻，只有点击顶部状态栏「退出 BudHold」才真正退出
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if isTrueQuitRequested {
+            return .terminateNow
+        }
+
+        // 非顶部图标触发的退出（例如底部 Dock 右键菜单点击退出、或按 ⌘Q）：
+        // 隐藏主窗口并转为顶部状态栏后台运行，不退出程序
+        mainWindow?.orderOut(nil)
+        NSApp.setActivationPolicy(.accessory)
+        PowerKeepAliveManager.shared.appendLog("已隐藏主窗口与底部图标，BudHold 仍在顶部菜单栏后台运行（如需彻底退出请点击顶部图标 -> 退出 BudHold）")
+        return .terminateCancel
+    }
+
+    /// 点击窗口左上角红色关闭按钮时：仅隐藏窗口，不退出软件
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        sender.orderOut(nil)
+        return false
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         if DisplayBrightnessController.shared.isBlackoutModeActive {
             _ = DisplayBrightnessController.shared.disableBlackoutMode()
@@ -53,6 +85,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if PowerKeepAliveManager.shared.restoreSleepOnAppQuit {
             _ = PowerKeepAliveManager.shared.disableAllKeepAwake()
         }
+    }
+
+    // MARK: - 构建纯净的应用主菜单（不生成任何多余的「设置」弹窗）
+    private func setupApplicationMainMenu() {
+        let mainMenu = NSMenu()
+
+        // 1. 应用菜单
+        let appMenuItem = NSMenuItem()
+        mainMenu.addItem(appMenuItem)
+        let appMenu = NSMenu()
+        appMenuItem.submenu = appMenu
+
+        let showWindowItem = NSMenuItem(
+            title: "显示 BudHold 主控制台",
+            action: #selector(openDashboardWindow),
+            keyEquivalent: "o"
+        )
+        showWindowItem.target = self
+        appMenu.addItem(showWindowItem)
+
+        appMenu.addItem(.separator())
+
+        let hideToBarItem = NSMenuItem(
+            title: "隐藏到底部栏外（仅保留顶部图标）",
+            action: #selector(hideWindowAndDockIcon),
+            keyEquivalent: "w"
+        )
+        hideToBarItem.target = self
+        appMenu.addItem(hideToBarItem)
+
+        // ⌘Q 走 NSApp.terminate，会被 applicationShouldTerminate 拦截为转入后台
+        let dockQuitItem = NSMenuItem(
+            title: "关闭窗口并转入后台运行",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        )
+        appMenu.addItem(dockQuitItem)
+
+        // 2. 编辑菜单（确保复制粘贴快捷键正常）
+        let editMenuItem = NSMenuItem()
+        mainMenu.addItem(editMenuItem)
+        let editMenu = NSMenu(title: "编辑")
+        editMenuItem.submenu = editMenu
+        editMenu.addItem(withTitle: "拷贝", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: "粘贴", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: "全选", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+
+        NSApp.mainMenu = mainMenu
     }
 
     // MARK: - 顶部菜单栏图标与快捷菜单
@@ -169,17 +249,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let openDashboardItem = NSMenuItem(
             title: "打开 BudHold 主控制台...",
             action: #selector(openDashboardWindow),
-            keyEquivalent: "o"
+            keyEquivalent: ""
         )
         openDashboardItem.target = self
         menu.addItem(openDashboardItem)
 
         menu.addItem(.separator())
 
+        // 仅顶部菜单栏的此按钮才会触发真退出（不绑定 ⌘Q 防止误按退出）
         let quitItem = NSMenuItem(
-            title: "退出 BudHold",
-            action: #selector(quitApp),
-            keyEquivalent: "q"
+            title: "退出 BudHold（彻底退出）",
+            action: #selector(quitAppFromStatusBar),
+            keyEquivalent: ""
         )
         quitItem.target = self
         menu.addItem(quitItem)
@@ -228,7 +309,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         AppViewModel.shared.launchRustDesk()
     }
 
+    @objc private func hideWindowAndDockIcon() {
+        mainWindow?.orderOut(nil)
+        NSApp.setActivationPolicy(.accessory)
+    }
+
     @objc private func openDashboardWindow() {
+        // 打开主控制台时恢复普通应用策略，显示在窗口与底部程序坞中
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
+
         if let window = mainWindow {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -255,7 +346,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         self.mainWindow = window
     }
 
-    @objc private func quitApp() {
+    @objc private func quitAppFromStatusBar() {
+        isTrueQuitRequested = true
         NSApp.terminate(nil)
     }
 }

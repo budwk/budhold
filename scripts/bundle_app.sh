@@ -20,7 +20,7 @@ ICONSET_DIR="$DIST_DIR/AppIcon.iconset"
 rm -rf "$ICONSET_DIR"
 mkdir -p "$ICONSET_DIR"
 
-swift -e '
+swift -target arm64-apple-macosx13.0 -e '
 import AppKit
 
 let sizes = [16, 32, 64, 128, 256, 512, 1024]
@@ -124,7 +124,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<EOF
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
-    <string>BudHold for macOS ${MACOS_VER} — RustDesk Clamshell &amp; Keep-Awake Tool</string>
+    <string>BudHold — Compatible with macOS 13.0 ~ 26.x ~ 27.x</string>
 </dict>
 </plist>
 EOF

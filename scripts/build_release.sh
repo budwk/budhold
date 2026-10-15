@@ -13,9 +13,9 @@ echo " 📦 BudHold v${VERSION} GitHub Release 安装包构建脚本"
 echo "================================================================"
 
 # 1. 编译通用二进制 (Universal Binary: arm64 + x86_64) 并生成 BudHold.app
-echo "🔨 [1/5] 正在生成基础应用包与编译 Universal Binary (arm64 + x86_64)..."
+echo "🔨 [1/5] 正在生成基础应用包与编译 Universal Binary (arm64 + x86_64, 兼容 macOS 13.0 ~ 26.x ~ 27.x)..."
 "$PROJECT_DIR/scripts/bundle_app.sh" >/dev/null
-swift build -c release --arch arm64 --arch x86_64
+swift build -c release --arch arm64 --arch x86_64 -Xlinker -w
 
 UNIVERSAL_BUILD_DIR="$PROJECT_DIR/.build/apple/Products/Release"
 if [ ! -f "$UNIVERSAL_BUILD_DIR/BudHoldApp" ]; then
@@ -29,6 +29,11 @@ cp "$UNIVERSAL_BUILD_DIR/budhold" "$DIST_DIR/budhold"
 chmod +x "$DIST_DIR/BudHold.app/Contents/MacOS/BudHoldApp" "$DIST_DIR/BudHold.app/Contents/MacOS/budhold" "$DIST_DIR/budhold"
 codesign --force --deep --sign - "$DIST_DIR/BudHold.app"
 codesign --force --sign - "$DIST_DIR/budhold"
+
+if [ -w "/Applications" ]; then
+    rm -rf "/Applications/BudHold.app"
+    cp -R "$DIST_DIR/BudHold.app" "/Applications/BudHold.app"
+fi
 
 echo "   架构信息: $(lipo -info "$DIST_DIR/BudHold.app/Contents/MacOS/BudHoldApp")"
 
@@ -97,7 +102,7 @@ shasum -a 256 \
 cat > "$RELEASE_DIR/RELEASE_NOTES.md" <<EOF
 ## BudHold v${VERSION} — macOS 防休眠与合盖远程保活工具
 
-支持 **Apple Silicon (M1/M2/M3/M4)** 与 **Intel (x86_64)** 双架构通用包 (Universal Binary)，兼容 macOS 13.0 及以上系统（含最新 macOS 27）。
+支持 **Apple Silicon (M1/M2/M3/M4)** 与 **Intel (x86_64)** 双架构通用包 (Universal Binary)，全面兼容 **macOS 26.x (Tahoe)**、**macOS 27.x** 以及 **macOS 13 / 14 / 15**。
 
 ### ✨ 功能亮点
 - **MacBook 合盖 + 关屏不休眠**：结合 \`IOKit\` 电源断言与内核级 \`SleepDisabled\` 锁，即使拔掉外接显示器并合上盖子，网络与图形渲染依旧保持 100% 运行。
