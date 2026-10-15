@@ -1,0 +1,13 @@
+# Swift & Xcode build artifacts
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+
+# Local build & release outputs
+dist/
+release/
+
+# macOS system files
+.DS_Store

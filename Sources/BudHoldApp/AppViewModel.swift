@@ -21,9 +21,23 @@ public final class AppViewModel: ObservableObject {
     @Published public var keepDisplayRendererAwake: Bool = true {
         didSet { PowerKeepAliveManager.shared.keepDisplayRendererAwake = keepDisplayRendererAwake }
     }
-    @Published public var rustDeskWatchdogEnabled: Bool = true {
-        didSet { PowerKeepAliveManager.shared.rustDeskWatchdogEnabled = rustDeskWatchdogEnabled }
+
+    /// RustDesk 监控（非必须项，按需启用）
+    @Published public var rustDeskMonitoringEnabled: Bool {
+        didSet {
+            PowerKeepAliveManager.shared.rustDeskMonitoringEnabled = rustDeskMonitoringEnabled
+            rustDeskStatus = RustDeskMonitor.shared.fetchStatus(enabled: rustDeskMonitoringEnabled)
+            PowerKeepAliveManager.shared.appendLog(rustDeskMonitoringEnabled ? "已按需启用 RustDesk 状态监控" : "已关闭 RustDesk 状态监控")
+            onStatusBarNeedsUpdate?()
+        }
     }
+
+    @Published public var rustDeskWatchdogEnabled: Bool {
+        didSet {
+            PowerKeepAliveManager.shared.rustDeskWatchdogEnabled = rustDeskWatchdogEnabled
+        }
+    }
+
     @Published public var lowBatteryAutoRestoreEnabled: Bool = true {
         didSet { PowerKeepAliveManager.shared.lowBatteryAutoRestoreEnabled = lowBatteryAutoRestoreEnabled }
     }
@@ -45,11 +59,15 @@ public final class AppViewModel: ObservableObject {
     }
 
     private init() {
+        let mgr = PowerKeepAliveManager.shared
+        let rdEnabled = mgr.rustDeskMonitoringEnabled
+        self.rustDeskMonitoringEnabled = rdEnabled
+        self.rustDeskWatchdogEnabled = mgr.rustDeskWatchdogEnabled
+
         self.osInfo = SystemInfoService.shared.osInfo
         self.powerStatus = SystemInfoService.shared.fetchPowerAndLidStatus()
-        self.rustDeskStatus = RustDeskMonitor.shared.fetchStatus()
+        self.rustDeskStatus = RustDeskMonitor.shared.fetchStatus(enabled: rdEnabled)
 
-        let mgr = PowerKeepAliveManager.shared
         self.isIdleKeepAwakeActive = mgr.isIdleKeepAwakeActive
         self.isClamshellKeepAwakeActive = powerStatus.isKernelSleepDisabled
         self.isBlackoutModeActive = DisplayBrightnessController.shared.isBlackoutModeActive
@@ -80,7 +98,7 @@ public final class AppViewModel: ObservableObject {
 
     public func refreshAll() {
         powerStatus = SystemInfoService.shared.fetchPowerAndLidStatus()
-        rustDeskStatus = RustDeskMonitor.shared.fetchStatus()
+        rustDeskStatus = RustDeskMonitor.shared.fetchStatus(enabled: rustDeskMonitoringEnabled)
         syncFromManager()
     }
 
@@ -155,7 +173,7 @@ public final class AppViewModel: ObservableObject {
                 _ = PowerKeepAliveManager.shared.enableIdleKeepAwake(preventDisplaySleep: true, duration: selectedDuration)
             }
             let ok = DisplayBrightnessController.shared.enableBlackoutMode()
-            PowerKeepAliveManager.shared.appendLog(ok ? "已开启物理熄屏挂机模式（背光 0%，GPU 渲染保持活跃供 RustDesk 使用）" : "调节屏幕背光失败")
+            PowerKeepAliveManager.shared.appendLog(ok ? "已开启物理熄屏挂机模式（背光 0%，GPU 渲染保持活跃）" : "调节屏幕背光失败")
             showToast("已开启物理熄屏模式（按 Esc 键或再次点击即可恢复屏幕亮度）")
         }
         refreshAll()

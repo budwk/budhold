@@ -41,6 +41,9 @@ public struct LogEntry: Identifiable, Sendable {
 public final class PowerKeepAliveManager {
     public static let shared = PowerKeepAliveManager()
 
+    private static let kRustDeskMonitoringEnabledKey = "budhold.rustDeskMonitoringEnabled"
+    private static let kRustDeskWatchdogEnabledKey = "budhold.rustDeskWatchdogEnabled"
+
     private var systemSleepAssertionID: IOPMAssertionID = 0
     private var displaySleepAssertionID: IOPMAssertionID = 0
     private var hasSystemAssertion: Bool = false
@@ -50,7 +53,21 @@ public final class PowerKeepAliveManager {
     public private(set) var isIdleKeepAwakeActive: Bool = false
     public private(set) var isClamshellKeepAwakeActive: Bool = false
     public var keepDisplayRendererAwake: Bool = true
-    public var rustDeskWatchdogEnabled: Bool = true
+
+    /// RustDesk 监控与集成（非必须项，默认关闭，用户可按需开启）
+    public var rustDeskMonitoringEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(rustDeskMonitoringEnabled, forKey: Self.kRustDeskMonitoringEnabledKey)
+        }
+    }
+
+    /// RustDesk 进程自动拉起守护（仅在 rustDeskMonitoringEnabled 开启时生效）
+    public var rustDeskWatchdogEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(rustDeskWatchdogEnabled, forKey: Self.kRustDeskWatchdogEnabledKey)
+        }
+    }
+
     public var lowBatteryAutoRestoreEnabled: Bool = true
     public var lowBatteryThreshold: Int = 20
     public var restoreSleepOnAppQuit: Bool = false
@@ -63,6 +80,8 @@ public final class PowerKeepAliveManager {
     private let sudoersFilePath = "/etc/sudoers.d/budhold"
 
     private init() {
+        self.rustDeskMonitoringEnabled = UserDefaults.standard.object(forKey: Self.kRustDeskMonitoringEnabledKey) as? Bool ?? false
+        self.rustDeskWatchdogEnabled = UserDefaults.standard.object(forKey: Self.kRustDeskWatchdogEnabledKey) as? Bool ?? true
         syncInitialKernelState()
     }
 
@@ -82,7 +101,7 @@ public final class PowerKeepAliveManager {
         }
     }
 
-    // MARK: - 一键开启「合盖+关屏不休眠（RustDesk 远程全天候模式）」
+    // MARK: - 一键开启「合盖+关屏不休眠」全天候模式
 
     @discardableResult
     public func enableFullRemoteReadyMode(duration: KeepAwakeDuration = .infinite) -> (success: Bool, message: String) {
@@ -95,15 +114,17 @@ public final class PowerKeepAliveManager {
         // 3. 开启内核级合盖不休眠 (pmset -a disablesleep 1 tcpkeepalive 1 womp 1)
         let (clamshellOk, errMsg) = setKernelClamshellSleepDisabled(true)
 
-        // 4. 确保 RustDesk 运行
-        let rdStatus = RustDeskMonitor.shared.fetchStatus()
-        if rdStatus.isInstalled && !rdStatus.isServerRunning {
-            RustDeskMonitor.shared.launchRustDesk()
-            appendLog("已自动拉起 RustDesk 远程服务")
+        // 4. 若用户按需开启了 RustDesk 监控与守护，则检查并确保 RustDesk 运行
+        if rustDeskMonitoringEnabled && rustDeskWatchdogEnabled {
+            let rdStatus = RustDeskMonitor.shared.fetchStatus(enabled: true)
+            if rdStatus.isInstalled && !rdStatus.isServerRunning {
+                RustDeskMonitor.shared.launchRustDesk()
+                appendLog("已按需自动拉起 RustDesk 远程服务")
+            }
         }
 
         if idleOk && clamshellOk {
-            let msg = "已开启「合盖+关屏不休眠」全天候远程模式，RustDesk 可随时连接"
+            let msg = "已开启「合盖+关屏不休眠」全天候模式，电脑合盖或关屏均保持运行"
             appendLog(msg)
             return (true, msg)
         } else if idleOk && !clamshellOk {
@@ -147,7 +168,7 @@ public final class PowerKeepAliveManager {
         releaseIOKitAssertions()
         stopCaffeinateProcess()
 
-        let reason = "BudHold Remote Keep-Awake for RustDesk" as CFString
+        let reason = "BudHold Clamshell & Display Keep-Awake" as CFString
 
         let sysRet = IOPMAssertionCreateWithName(
             kIOPMAssertionTypePreventUserIdleSystemSleep as CFString,
@@ -384,7 +405,7 @@ public final class PowerKeepAliveManager {
         }
     }
 
-    // MARK: - 第三层：周期性守护巡检（合盖/关屏渲染保活、RustDesk 守护、低电量安全恢复、定时到期检查）
+    // MARK: - 第三层：周期性守护巡检（合盖/关屏渲染保活、可选 RustDesk 守护、低电量安全恢复、定时到期检查）
 
     public func performPeriodicTick() {
         let status = SystemInfoService.shared.fetchPowerAndLidStatus()
@@ -406,22 +427,24 @@ public final class PowerKeepAliveManager {
             }
         }
 
-        // 3. 保持显示渲染管线活跃（即使显示器被关闭或 MacBook 合盖，也确保 WindowServer 不停止帧缓冲刷新，防止 RustDesk 黑屏）
+        // 3. 保持显示渲染管线活跃（即使显示器被关闭或 MacBook 合盖，也确保 WindowServer 不停止帧缓冲刷新，防止远控黑屏）
         if (isIdleKeepAwakeActive || isClamshellKeepAwakeActive) && keepDisplayRendererAwake {
             if status.isDisplayAsleep || status.isClamshellClosed {
                 DisplayBrightnessController.shared.wakeDisplayFramebuffer()
             }
         }
 
-        // 4. RustDesk 进程守护与远控连接唤醒
-        let rdStatus = RustDeskMonitor.shared.fetchStatus()
-        if rustDeskWatchdogEnabled && (isIdleKeepAwakeActive || isClamshellKeepAwakeActive) {
-            if rdStatus.isInstalled && !rdStatus.isServerRunning {
-                appendLog("检测到 RustDesk 服务未运行，正在自动重启 RustDesk...")
-                RustDeskMonitor.shared.launchRustDesk()
-            }
-            if rdStatus.activeConnectionCount > 0 && status.isDisplayAsleep {
-                DisplayBrightnessController.shared.wakeDisplayFramebuffer()
+        // 4. 可选：RustDesk 进程守护与远控连接唤醒（仅当用户启用了 RustDesk 监控时执行）
+        if rustDeskMonitoringEnabled {
+            let rdStatus = RustDeskMonitor.shared.fetchStatus(enabled: true)
+            if rustDeskWatchdogEnabled && (isIdleKeepAwakeActive || isClamshellKeepAwakeActive) {
+                if rdStatus.isInstalled && !rdStatus.isServerRunning {
+                    appendLog("检测到 RustDesk 服务未运行，正在自动重启 RustDesk...")
+                    RustDeskMonitor.shared.launchRustDesk()
+                }
+                if rdStatus.activeConnectionCount > 0 && status.isDisplayAsleep {
+                    DisplayBrightnessController.shared.wakeDisplayFramebuffer()
+                }
             }
         }
     }

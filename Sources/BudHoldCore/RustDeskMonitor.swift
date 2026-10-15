@@ -2,6 +2,7 @@ import Foundation
 import AppKit
 
 public struct RustDeskStatus: Sendable, Equatable {
+    public let isMonitoringEnabled: Bool
     public let isInstalled: Bool
     public let appPath: String
     public let version: String
@@ -12,8 +13,20 @@ public struct RustDeskStatus: Sendable, Equatable {
     public let activePeerEndpoints: [String]
 
     public var isReadyForRemote: Bool {
-        isInstalled && isServerRunning
+        isMonitoringEnabled && isInstalled && isServerRunning
     }
+
+    public static let disabledPlaceholder = RustDeskStatus(
+        isMonitoringEnabled: false,
+        isInstalled: false,
+        appPath: "/Applications/RustDesk.app",
+        version: "-",
+        deviceID: "-",
+        isServerRunning: false,
+        isServiceRunning: false,
+        activeConnectionCount: 0,
+        activePeerEndpoints: []
+    )
 }
 
 public final class RustDeskMonitor {
@@ -27,10 +40,15 @@ public final class RustDeskMonitor {
 
     private init() {}
 
-    public func fetchStatus() -> RustDeskStatus {
+    public func fetchStatus(enabled: Bool = true) -> RustDeskStatus {
+        guard enabled else {
+            return .disabledPlaceholder
+        }
+
         let isInstalled = FileManager.default.fileExists(atPath: appPath)
         guard isInstalled else {
             return RustDeskStatus(
+                isMonitoringEnabled: true,
                 isInstalled: false,
                 appPath: appPath,
                 version: "未安装",
@@ -48,6 +66,7 @@ public final class RustDeskMonitor {
         let peers = checkActiveConnections()
 
         return RustDeskStatus(
+            isMonitoringEnabled: true,
             isInstalled: true,
             appPath: appPath,
             version: version,

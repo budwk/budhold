@@ -23,6 +23,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let vm = AppViewModel.shared
 
+        if CommandLine.arguments.contains("--rustdesk") {
+            vm.rustDeskMonitoringEnabled = true
+        }
+
         setupStatusBarItem()
         setupEscapeKeyRestoreBrightness()
         openDashboardWindow()
@@ -88,14 +92,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         osHeader.isEnabled = false
         menu.addItem(osHeader)
 
-        let rdHeader = NSMenuItem(
-            title: "🔗 RustDesk ID: \(vm.rustDeskStatus.deviceID) (\(vm.rustDeskStatus.isServerRunning ? "在线" : "未运行"))",
-            action: #selector(copyRustDeskIDFromMenu),
-            keyEquivalent: ""
-        )
-        rdHeader.target = self
-        menu.addItem(rdHeader)
-
         let lidHeader = NSMenuItem(
             title: "💻 盒盖状态: \(vm.powerStatus.isClamshellClosed ? "已合盖" : "开盖") | 电源: \(vm.powerStatus.isACPower ? "外接电源" : "电池") \(vm.powerStatus.batteryPercentage)%",
             action: nil,
@@ -104,10 +100,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         lidHeader.isEnabled = false
         menu.addItem(lidHeader)
 
+        if vm.rustDeskMonitoringEnabled {
+            let rdHeader = NSMenuItem(
+                title: "🔗 RustDesk ID: \(vm.rustDeskStatus.deviceID) (\(vm.rustDeskStatus.isServerRunning ? "在线" : "未运行"))",
+                action: #selector(copyRustDeskIDFromMenu),
+                keyEquivalent: ""
+            )
+            rdHeader.target = self
+            menu.addItem(rdHeader)
+        }
+
         menu.addItem(.separator())
 
         let fullToggleItem = NSMenuItem(
-            title: vm.isFullRemoteModeActive ? "✅ 已开启：合盖+关屏不休眠（点击关闭）" : "🚀 一键开启：合盖+关屏不休眠（RustDesk 远程专用）",
+            title: vm.isFullRemoteModeActive ? "✅ 已开启：合盖+关屏不休眠（点击关闭）" : "🚀 一键开启：合盖+关屏不休眠",
             action: #selector(toggleFullModeFromMenu),
             keyEquivalent: "k"
         )
@@ -140,6 +146,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         menu.addItem(.separator())
 
+        let rdMonitorToggleItem = NSMenuItem(
+            title: vm.rustDeskMonitoringEnabled ? "📡 RustDesk 监控（按需项）: 已启用" : "📡 RustDesk 监控（按需项）: 未启用",
+            action: #selector(toggleRustDeskMonitorFromMenu),
+            keyEquivalent: ""
+        )
+        rdMonitorToggleItem.target = self
+        menu.addItem(rdMonitorToggleItem)
+
+        if vm.rustDeskMonitoringEnabled {
+            let openRustDeskItem = NSMenuItem(
+                title: "打开 RustDesk 客户端",
+                action: #selector(openRustDeskFromMenu),
+                keyEquivalent: ""
+            )
+            openRustDeskItem.target = self
+            menu.addItem(openRustDeskItem)
+        }
+
+        menu.addItem(.separator())
+
         let openDashboardItem = NSMenuItem(
             title: "打开 BudHold 主控制台...",
             action: #selector(openDashboardWindow),
@@ -147,14 +173,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
         openDashboardItem.target = self
         menu.addItem(openDashboardItem)
-
-        let openRustDeskItem = NSMenuItem(
-            title: "打开 RustDesk 客户端",
-            action: #selector(openRustDeskFromMenu),
-            keyEquivalent: ""
-        )
-        openRustDeskItem.target = self
-        menu.addItem(openRustDeskItem)
 
         menu.addItem(.separator())
 
@@ -198,6 +216,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         AppViewModel.shared.toggleBlackoutMode()
     }
 
+    @objc private func toggleRustDeskMonitorFromMenu() {
+        AppViewModel.shared.rustDeskMonitoringEnabled.toggle()
+    }
+
     @objc private func copyRustDeskIDFromMenu() {
         AppViewModel.shared.copyRustDeskID()
     }
@@ -223,7 +245,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "BudHold — macOS 防休眠与合盖远程保活工具 (\(os.productName) \(os.productVersion))"
+        window.title = "BudHold — macOS 防休眠与合盖保活工具 (\(os.productName) \(os.productVersion))"
         window.contentViewController = hostingController
         window.center()
         window.isReleasedWhenClosed = false

@@ -51,7 +51,7 @@ public struct DashboardView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    Text("BudHold 远程防休眠卫士")
+                    Text("BudHold 防休眠与合盖保活工具")
                         .font(.system(size: 19, weight: .bold))
                     Text(vm.osInfo.versionBadgeString)
                         .font(.system(size: 12, weight: .semibold, design: .monospaced))
@@ -85,7 +85,7 @@ public struct DashboardView: View {
             Circle()
                 .fill(vm.isFullRemoteModeActive ? Color.green : (vm.isIdleKeepAwakeActive ? Color.orange : Color.gray))
                 .frame(width: 9, height: 9)
-            Text(vm.isFullRemoteModeActive ? "合盖+关屏不休眠 · 远控就绪" : (vm.isIdleKeepAwakeActive ? "仅防空闲/关屏睡眠" : "系统默认睡眠模式"))
+            Text(vm.isFullRemoteModeActive ? "合盖+关屏不休眠 · 运行中" : (vm.isIdleKeepAwakeActive ? "仅防空闲/关屏睡眠" : "系统默认睡眠模式"))
                 .font(.system(size: 12, weight: .semibold))
         }
         .padding(.horizontal, 12)
@@ -101,9 +101,9 @@ public struct DashboardView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(vm.isFullRemoteModeActive ? "已开启全天候远程保活模式（合盖 & 关屏均不休眠）" : "一键开启「MacBook 合盖 + 显示器关闭」不休眠模式")
+                    Text(vm.isFullRemoteModeActive ? "已开启全天候保活模式（合盖 & 关屏均不休眠）" : "一键开启「MacBook 合盖 + 显示器关闭」不休眠模式")
                         .font(.system(size: 16, weight: .bold))
-                    Text("同时激活 IOKit 电源/显示渲染断言与内核级 SleepDisabled 锁，确保 MacBook 合上盖子或屏幕关闭后，网络与桌面图形渲染持续工作，RustDesk 可随时远程连接且不黑屏。")
+                    Text("同时激活 IOKit 电源/显示渲染断言与内核级 SleepDisabled 锁，确保 MacBook 合上盖子或屏幕关闭后，网络与桌面图形渲染持续工作，支持 RustDesk / SSH / 屏幕共享等随时远程连接。")
                         .font(.system(size: 12.5))
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -297,84 +297,21 @@ public struct DashboardView: View {
         )
     }
 
-    // MARK: - 4. RustDesk 远程连接状态面板
+    // MARK: - 4. 网络信息与按需可选的 RustDesk 监控卡片
     private var rustDeskCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "network.badge.shield.half.filled")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(vm.rustDeskStatus.isReadyForRemote ? .green : .orange)
-                Text("RustDesk 远程控制服务状态")
+                    .foregroundColor(vm.rustDeskMonitoringEnabled ? (vm.rustDeskStatus.isReadyForRemote ? .green : .orange) : .secondary)
+                Text("网络与 RustDesk 远程辅助（可选按需启用）")
                     .font(.system(size: 14.5, weight: .bold))
 
                 Spacer()
 
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(vm.rustDeskStatus.isReadyForRemote ? Color.green : Color.red)
-                        .frame(width: 8, height: 8)
-                    Text(vm.rustDeskStatus.isReadyForRemote ? "RustDesk 服务运行正常" : "RustDesk 未运行或未安装")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(vm.rustDeskStatus.isReadyForRemote ? .green : .red)
-                }
-
-                Button(action: {
-                    vm.launchRustDesk()
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.forward.app")
-                        Text(vm.rustDeskStatus.isServerRunning ? "打开 RustDesk 界面" : "启动 RustDesk 服务")
-                    }
+                Toggle("启用 RustDesk 监控与守护", isOn: $vm.rustDeskMonitoringEnabled)
+                    .toggleStyle(.switch)
                     .font(.system(size: 12, weight: .medium))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(Color.accentColor.opacity(0.15))
-                    )
-                    .foregroundColor(.accentColor)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-
-            HStack(spacing: 24) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("本机 RustDesk ID")
-                        .font(.system(size: 11.5))
-                        .foregroundColor(.secondary)
-                    HStack(spacing: 8) {
-                        Text(vm.rustDeskStatus.deviceID)
-                            .font(.system(size: 16, weight: .bold, design: .monospaced))
-                        Button(action: { vm.copyRustDeskID() }) {
-                            Label("复制", systemImage: "doc.on.doc")
-                                .font(.system(size: 11))
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(0.08)))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("客户端版本与进程")
-                        .font(.system(size: 11.5))
-                        .foregroundColor(.secondary)
-                    Text("v\(vm.rustDeskStatus.version) · Server: \(vm.rustDeskStatus.isServerRunning ? "在线" : "离线") · Service: \(vm.rustDeskStatus.isServiceRunning ? "在线" : "离线")")
-                        .font(.system(size: 12.5, weight: .medium))
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("当前活跃远程会话")
-                        .font(.system(size: 11.5))
-                        .foregroundColor(.secondary)
-                    Text(vm.rustDeskStatus.activeConnectionCount > 0 ? "🟢 \(vm.rustDeskStatus.activeConnectionCount) 个活跃连接" : "⚪ 当前空闲（等待远控连接）")
-                        .font(.system(size: 12.5, weight: .medium))
-                }
-
-                Spacer()
             }
 
             HStack(spacing: 6) {
@@ -386,6 +323,70 @@ public struct DashboardView: View {
                     .foregroundColor(.secondary)
                 Text(vm.powerStatus.localIPs.isEmpty ? "未连接网络" : vm.powerStatus.localIPs.joined(separator: "  |  "))
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
+            }
+
+            if vm.rustDeskMonitoringEnabled {
+                Divider()
+
+                HStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("本机 RustDesk ID")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.secondary)
+                        HStack(spacing: 8) {
+                            Text(vm.rustDeskStatus.deviceID)
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            Button(action: { vm.copyRustDeskID() }) {
+                                Label("复制", systemImage: "doc.on.doc")
+                                    .font(.system(size: 11))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(0.08)))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("客户端版本与进程")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.secondary)
+                        Text("v\(vm.rustDeskStatus.version) · Server: \(vm.rustDeskStatus.isServerRunning ? "在线" : "离线") · Service: \(vm.rustDeskStatus.isServiceRunning ? "在线" : "离线")")
+                            .font(.system(size: 12.5, weight: .medium))
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("当前活跃远程会话")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.secondary)
+                        Text(vm.rustDeskStatus.activeConnectionCount > 0 ? "🟢 \(vm.rustDeskStatus.activeConnectionCount) 个活跃连接" : "⚪ 当前空闲（等待远控连接）")
+                            .font(.system(size: 12.5, weight: .medium))
+                    }
+
+                    Spacer()
+
+                    Button(action: {
+                        vm.launchRustDesk()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.forward.app")
+                            Text(vm.rustDeskStatus.isServerRunning ? "打开 RustDesk" : "启动 RustDesk")
+                        }
+                        .font(.system(size: 12, weight: .medium))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(Color.accentColor.opacity(0.15))
+                        )
+                        .foregroundColor(.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Toggle("RustDesk 进程自动拉起守护（检测到 RustDesk 意外退出时自动重新启动）", isOn: $vm.rustDeskWatchdogEnabled)
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
             }
         }
         .padding(14)
@@ -407,23 +408,20 @@ public struct DashboardView: View {
 
             HStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("保持显示帧缓冲渲染活跃（防止合盖或关屏后 RustDesk 画面黑屏）", isOn: $vm.keepDisplayRendererAwake)
-                        .font(.system(size: 12.5))
-                    Toggle("RustDesk 进程守护（检测到 RustDesk 意外退出时自动重新拉起）", isOn: $vm.rustDeskWatchdogEnabled)
+                    Toggle("保持显示帧缓冲渲染活跃（防止合盖或关屏后远程桌面画面黑屏）", isOn: $vm.keepDisplayRendererAwake)
                         .font(.system(size: 12.5))
                     Toggle("低电量防闷烧保护（电池供电且电量 ≤ \(vm.lowBatteryThreshold)% 时自动恢复合盖休眠）", isOn: $vm.lowBatteryAutoRestoreEnabled)
                         .font(.system(size: 12.5))
+                    Toggle("开机自动启动 BudHold 并激活防休眠", isOn: Binding(
+                        get: { vm.isLaunchAtLoginEnabled },
+                        set: { _ in vm.toggleLaunchAtLogin() }
+                    ))
+                    .font(.system(size: 12.5))
                 }
 
                 Spacer()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("开机自动启动 BudHold 并激活远程防休眠", isOn: Binding(
-                        get: { vm.isLaunchAtLoginEnabled },
-                        set: { _ in vm.toggleLaunchAtLogin() }
-                    ))
-                    .font(.system(size: 12.5))
-
                     Toggle("退出 BudHold 时自动恢复系统默认休眠设置", isOn: $vm.restoreSleepOnAppQuit)
                         .font(.system(size: 12.5))
 
