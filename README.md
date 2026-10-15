@@ -5,6 +5,11 @@
 
 此外，BudHold 内置了**按需启用（非必须项）**的 RustDesk 状态监控与进程守护模块，不强制依赖 RustDesk，兼顾通用防休眠与远程控制场景。
 
+<p align="center">
+  <a href="ScreenShot.png"><img src="ScreenShot.png" alt="界面" width="60%"></a>
+</p>
+
+
 ### 🖥️ 系统与架构兼容性
 - **支持系统版本**：全面兼容 **macOS 26.x (Tahoe)**、**macOS 27.x** 以及 **macOS 13 (Ventura) / 14 (Sonoma) / 15 (Sequoia)**（二进制最低部署目标 `minos 13.0`）。
 - **支持芯片架构**：Universal Binary 通用二进制，原生支持 **Apple Silicon (`arm64`: M1 / M2 / M3 / M4)** 与 **Intel (`x86_64`)**。
