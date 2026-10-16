@@ -7,9 +7,10 @@ import BudHoldCore
 public final class AppViewModel: ObservableObject {
     public static let shared = AppViewModel()
 
+    private static let kHasShownBlackoutGuideKey = "budhold.hasShownBlackoutGuide"
+
     @Published public var osInfo: MacOSVersionInfo
     @Published public var powerStatus: PowerAndLidStatus
-    @Published public var rustDeskStatus: RustDeskStatus
 
     @Published public var isIdleKeepAwakeActive: Bool = false
     @Published public var isClamshellKeepAwakeActive: Bool = false
@@ -17,25 +18,24 @@ public final class AppViewModel: ObservableObject {
     @Published public var isPasswordlessSudoInstalled: Bool = false
     @Published public var isLaunchAtLoginEnabled: Bool = false
 
-    @Published public var selectedDuration: KeepAwakeDuration = .infinite
-    @Published public var keepDisplayRendererAwake: Bool = true {
-        didSet { PowerKeepAliveManager.shared.keepDisplayRendererAwake = keepDisplayRendererAwake }
-    }
-
-    /// RustDesk 监控（非必须项，按需启用）
-    @Published public var rustDeskMonitoringEnabled: Bool {
+    @Published public var selectedLanguage: AppLanguage = L10n.shared.language {
         didSet {
-            PowerKeepAliveManager.shared.rustDeskMonitoringEnabled = rustDeskMonitoringEnabled
-            rustDeskStatus = RustDeskMonitor.shared.fetchStatus(enabled: rustDeskMonitoringEnabled)
-            PowerKeepAliveManager.shared.appendLog(rustDeskMonitoringEnabled ? "已按需启用 RustDesk 状态监控" : "已关闭 RustDesk 状态监控")
+            guard selectedLanguage != oldValue else { return }
+            L10n.shared.language = selectedLanguage
+            onLanguageChanged?()
             onStatusBarNeedsUpdate?()
         }
     }
 
-    @Published public var rustDeskWatchdogEnabled: Bool {
+    @Published public var selectedDuration: KeepAwakeDuration = .infinite {
         didSet {
-            PowerKeepAliveManager.shared.rustDeskWatchdogEnabled = rustDeskWatchdogEnabled
+            guard selectedDuration != oldValue else { return }
+            PowerKeepAliveManager.shared.updateDuration(selectedDuration)
+            onStatusBarNeedsUpdate?()
         }
+    }
+    @Published public var keepDisplayRendererAwake: Bool = true {
+        didSet { PowerKeepAliveManager.shared.keepDisplayRendererAwake = keepDisplayRendererAwake }
     }
 
     @Published public var lowBatteryAutoRestoreEnabled: Bool = true {
@@ -53,20 +53,21 @@ public final class AppViewModel: ObservableObject {
 
     private var timer: Timer?
     public var onStatusBarNeedsUpdate: (() -> Void)?
+    public var onLanguageChanged: (() -> Void)?
 
     public var isFullRemoteModeActive: Bool {
         isIdleKeepAwakeActive && isClamshellKeepAwakeActive
     }
 
+    public func tr(_ zh: String, _ en: String) -> String {
+        selectedLanguage.resolvedIsChinese ? zh : en
+    }
+
     private init() {
         let mgr = PowerKeepAliveManager.shared
-        let rdEnabled = mgr.rustDeskMonitoringEnabled
-        self.rustDeskMonitoringEnabled = rdEnabled
-        self.rustDeskWatchdogEnabled = mgr.rustDeskWatchdogEnabled
 
         self.osInfo = SystemInfoService.shared.osInfo
         self.powerStatus = SystemInfoService.shared.fetchPowerAndLidStatus()
-        self.rustDeskStatus = RustDeskMonitor.shared.fetchStatus(enabled: rdEnabled)
 
         self.isIdleKeepAwakeActive = mgr.isIdleKeepAwakeActive
         self.isClamshellKeepAwakeActive = powerStatus.isKernelSleepDisabled
@@ -81,7 +82,10 @@ public final class AppViewModel: ObservableObject {
             }
         }
 
-        mgr.appendLog("BudHold 已启动 — 检测到系统版本 \(osInfo.productName) \(osInfo.productVersion) (Build \(osInfo.buildVersion))")
+        mgr.appendLog(L10n.tr(
+            "BudHold 已启动 — 检测到系统版本 \(osInfo.productName) \(osInfo.productVersion) (Build \(osInfo.buildVersion))",
+            "BudHold started — Detected \(osInfo.productName) \(osInfo.productVersion) (Build \(osInfo.buildVersion))"
+        ))
 
         startPeriodicMonitoring()
     }
@@ -98,7 +102,6 @@ public final class AppViewModel: ObservableObject {
 
     public func refreshAll() {
         powerStatus = SystemInfoService.shared.fetchPowerAndLidStatus()
-        rustDeskStatus = RustDeskMonitor.shared.fetchStatus(enabled: rustDeskMonitoringEnabled)
         syncFromManager()
     }
 
@@ -114,6 +117,11 @@ public final class AppViewModel: ObservableObject {
     }
 
     // MARK: - 用户操作
+
+    public func setLanguage(_ language: AppLanguage) {
+        selectedLanguage = language
+        showToast(tr("语言已切换为：\(language.displayName(in: language))", "Language switched to: \(language.displayName(in: language))"))
+    }
 
     public func toggleFullRemoteMode() {
         if isFullRemoteModeActive {
@@ -141,10 +149,10 @@ public final class AppViewModel: ObservableObject {
     public func toggleIdleKeepAwake() {
         if isIdleKeepAwakeActive {
             PowerKeepAliveManager.shared.disableIdleKeepAwake()
-            showToast("已关闭空闲与关屏防休眠断言")
+            showToast(tr("已关闭空闲与关屏防休眠断言", "Disabled idle & display keep-awake assertions"))
         } else {
             _ = PowerKeepAliveManager.shared.enableIdleKeepAwake(preventDisplaySleep: true, duration: selectedDuration)
-            showToast("已开启空闲与关屏防休眠断言")
+            showToast(tr("已开启空闲与关屏防休眠断言", "Enabled idle & display keep-awake assertions"))
         }
         refreshAll()
     }
@@ -156,9 +164,12 @@ public final class AppViewModel: ObservableObject {
             if target && !isIdleKeepAwakeActive {
                 _ = PowerKeepAliveManager.shared.enableIdleKeepAwake(preventDisplaySleep: true, duration: selectedDuration)
             }
-            showToast(target ? "已开启合盖不休眠模式" : "已恢复系统默认合盖睡眠")
+            showToast(target
+                ? tr("已开启合盖不休眠模式", "Clamshell Keep-Awake enabled")
+                : tr("已恢复系统默认合盖睡眠", "Restored default lid sleep")
+            )
         } else {
-            showToast("设置合盖模式失败：\(err)")
+            showToast(tr("设置合盖模式失败：\(err)", "Failed to set clamshell mode: \(err)"))
         }
         refreshAll()
     }
@@ -166,17 +177,71 @@ public final class AppViewModel: ObservableObject {
     public func toggleBlackoutMode() {
         if isBlackoutModeActive || powerStatus.displayBrightness < 0.02 {
             let ok = DisplayBrightnessController.shared.disableBlackoutMode()
-            PowerKeepAliveManager.shared.appendLog(ok ? "已退出物理熄屏挂机模式，恢复屏幕背光" : "恢复屏幕背光失败")
-            showToast("已恢复屏幕背光亮度")
+            PowerKeepAliveManager.shared.appendLog(ok
+                ? tr("已退出物理熄屏挂机模式，恢复屏幕背光", "Exited Display Blackout mode, brightness restored")
+                : tr("恢复屏幕背光失败", "Failed to restore display brightness")
+            )
+            showToast(tr("已恢复屏幕背光亮度", "Display brightness restored"))
+            refreshAll()
         } else {
+            if !UserDefaults.standard.bool(forKey: Self.kHasShownBlackoutGuideKey) {
+                guard confirmFirstTimeBlackoutGuide() else {
+                    return
+                }
+            }
             if !isIdleKeepAwakeActive {
                 _ = PowerKeepAliveManager.shared.enableIdleKeepAwake(preventDisplaySleep: true, duration: selectedDuration)
             }
             let ok = DisplayBrightnessController.shared.enableBlackoutMode()
-            PowerKeepAliveManager.shared.appendLog(ok ? "已开启物理熄屏挂机模式（背光 0%，GPU 渲染保持活跃）" : "调节屏幕背光失败")
-            showToast("已开启物理熄屏模式（按 Esc 键或再次点击即可恢复屏幕亮度）")
+            PowerKeepAliveManager.shared.appendLog(ok
+                ? tr("已开启物理熄屏挂机模式（背光 0%，GPU 渲染保持活跃）", "Display Blackout enabled (Backlight 0%, GPU framebuffer active)")
+                : tr("调节屏幕背光失败", "Failed to set display brightness")
+            )
+            showToast(tr("已开启物理熄屏模式（按 Esc 键或再次点击即可恢复屏幕亮度）", "Blackout active (Press Esc or click again to restore brightness)"))
+            refreshAll()
         }
-        refreshAll()
+    }
+
+    private func confirmFirstTimeBlackoutGuide() -> Bool {
+        NSApp.activate(ignoringOtherApps: true)
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = tr(
+            "即将开启「物理熄屏挂机 (背光 0%)」",
+            "About to Enable Display Blackout (Backlight 0%)"
+        )
+        alert.informativeText = tr(
+            """
+            开启后屏幕背光将完全关闭（呈现黑屏状态），系统与图形渲染仍在正常保活运行，并非软件卡死或故障。
+
+            💡 随时恢复屏幕亮度的操作方式：
+            1. 按下键盘左上角的【Esc】键
+            2. 按下键盘上的【屏幕亮度增加键 (F2)】
+            3. 使用快捷键【⌘B】或再次点击原按钮
+            """,
+            """
+            The screen backlight will be turned down to 0% (pure black screen) while the system and GPU display renderer remain fully active. This is not a crash or freeze.
+
+            💡 How to restore screen brightness anytime:
+            1. Press the [Esc] key on your keyboard
+            2. Press the [Brightness Up (F2)] key
+            3. Press [⌘B] or click the button again
+            """
+        )
+        alert.addButton(withTitle: tr("开启物理熄屏", "Enable Blackout"))
+        alert.addButton(withTitle: tr("取消", "Cancel"))
+        alert.showsSuppressionButton = true
+        alert.suppressionButton?.title = tr("我已了解恢复方式，下次不再提醒", "I understand how to restore brightness, don't show again")
+        alert.suppressionButton?.state = .on
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            if alert.suppressionButton?.state == .on {
+                UserDefaults.standard.set(true, forKey: Self.kHasShownBlackoutGuideKey)
+            }
+            return true
+        }
+        return false
     }
 
     public func togglePasswordlessSudo() {
@@ -190,30 +255,23 @@ public final class AppViewModel: ObservableObject {
         refreshAll()
     }
 
+    public func setDuration(_ duration: KeepAwakeDuration) {
+        selectedDuration = duration
+        showToast(tr("保活时长已设为：\(duration.title)", "Duration set to: \(duration.title)"))
+    }
+
     public func toggleLaunchAtLogin() {
         let target = !isLaunchAtLoginEnabled
         if LaunchAgentManager.shared.setEnabled(target) {
             isLaunchAtLoginEnabled = target
-            PowerKeepAliveManager.shared.appendLog(target ? "已开启开机自启动 (LaunchAgent)" : "已关闭开机自启动")
-            showToast(target ? "已开启开机自动启动" : "已关闭开机自动启动")
-        }
-    }
-
-    public func copyRustDeskID() {
-        let id = rustDeskStatus.deviceID
-        guard !id.isEmpty, id != "-" else { return }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(id, forType: .string)
-        showToast("已复制 RustDesk ID: \(id)")
-    }
-
-    public func launchRustDesk() {
-        if RustDeskMonitor.shared.launchRustDesk() {
-            PowerKeepAliveManager.shared.appendLog("已启动/打开 RustDesk 客户端")
-            showToast("已打开 RustDesk")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self.refreshAll()
-            }
+            PowerKeepAliveManager.shared.appendLog(target
+                ? tr("已开启开机自启动 (LaunchAgent)", "Enabled Launch at Login (LaunchAgent)")
+                : tr("已关闭开机自启动", "Disabled Launch at Login")
+            )
+            showToast(target
+                ? tr("已开启开机自动启动", "Launch at Login enabled")
+                : tr("已关闭开机自动启动", "Launch at Login disabled")
+            )
         }
     }
 

@@ -1,0 +1,662 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0B1602A7E933A875206BE99D /* PowerKeepAliveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45672AF01920604F682BF886 /* PowerKeepAliveManager.swift */; };
+		2BF9730B4B00291F233A01D0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CF77CD39537FA99F6800752 /* AppKit.framework */; };
+		35FAD4F7060788B8CE74D69F /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2E715C2018C08D4C7F33EFC /* IOKit.framework */; };
+		4142B1E4AF87EBD063460C92 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B752D56C8E1B6037944CCB7 /* AppViewModel.swift */; };
+		795E4FE27DE66C7698D48167 /* libBudHoldCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F924C73881D2DC599F5C417D /* libBudHoldCore.a */; };
+		8858C7406A51805A388B7272 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7BA71B822203076229844CE /* main.swift */; };
+		A71131BA04FB664A40146073 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E021FD04DD607354EE768C6 /* SwiftUI.framework */; };
+		A84A870C4C1D7952A548D4F0 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D923FC6DFE1318C2BF5811EA /* DashboardView.swift */; };
+		CB7CFFC874C85477F0403960 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2E715C2018C08D4C7F33EFC /* IOKit.framework */; };
+		CE0EDCBDEF0424FF5B329753 /* BudHoldApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D555B10848DD86EA8233233E /* BudHoldApp.swift */; };
+		D86632ACD798FD1C27DEDF36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CA039A45DCC7824A6582039 /* Assets.xcassets */; };
+		E5DE8B57684E13ED2C1A9AA9 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBC24B0F37FD2C3FA463387 /* LocalizationManager.swift */; };
+		E9383CA9429403E80ECD9165 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CF77CD39537FA99F6800752 /* AppKit.framework */; };
+		F209AE14F8CA3AFE431E96F2 /* DisplayBrightnessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E6A59179401F62BD33D70C /* DisplayBrightnessController.swift */; };
+		F6084D24A08D16B579F3402D /* SystemInfoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 816AD1DE208FA9D272011458 /* SystemInfoService.swift */; };
+		F82781717D373299A86EA993 /* libBudHoldCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F924C73881D2DC599F5C417D /* libBudHoldCore.a */; };
+		FC5A473A4A9386CD06B6D258 /* LaunchAgentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DAA079DFAA3BFB2F067FBA8 /* LaunchAgentManager.swift */; };
+		FDFEB756EAEDC7EACD846C45 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65617B94B520B5F703447FC3 /* CoreGraphics.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B51ED81820120EFDD8C99537 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0DF3F7462B0442CF99E9C5BF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ADE311421540A16B8796474E;
+			remoteInfo = BudHoldCore;
+		};
+		E0133258DCF19F63F009FEBF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0DF3F7462B0442CF99E9C5BF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ADE311421540A16B8796474E;
+			remoteInfo = BudHoldCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		07963ED9E88C614C74C7847C /* BudHold.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BudHold.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		12E6A59179401F62BD33D70C /* DisplayBrightnessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayBrightnessController.swift; sourceTree = "<group>"; };
+		1B752D56C8E1B6037944CCB7 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
+		2DAA079DFAA3BFB2F067FBA8 /* LaunchAgentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAgentManager.swift; sourceTree = "<group>"; };
+		45672AF01920604F682BF886 /* PowerKeepAliveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerKeepAliveManager.swift; sourceTree = "<group>"; };
+		4CA039A45DCC7824A6582039 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5CF77CD39537FA99F6800752 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		65617B94B520B5F703447FC3 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		7E021FD04DD607354EE768C6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		816AD1DE208FA9D272011458 /* SystemInfoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfoService.swift; sourceTree = "<group>"; };
+		A2E715C2018C08D4C7F33EFC /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		A7BA71B822203076229844CE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		BBBC24B0F37FD2C3FA463387 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
+		D555B10848DD86EA8233233E /* BudHoldApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudHoldApp.swift; sourceTree = "<group>"; };
+		D923FC6DFE1318C2BF5811EA /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		F891B7D2F4C6BA099E40DC42 /* budhold */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = budhold; sourceTree = BUILT_PRODUCTS_DIR; };
+		F924C73881D2DC599F5C417D /* libBudHoldCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBudHoldCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4690E1DCC818A943C5873BA8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				795E4FE27DE66C7698D48167 /* libBudHoldCore.a in Frameworks */,
+				A71131BA04FB664A40146073 /* SwiftUI.framework in Frameworks */,
+				E9383CA9429403E80ECD9165 /* AppKit.framework in Frameworks */,
+				CB7CFFC874C85477F0403960 /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B82A6DA7BA2CA89280A6DA6E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35FAD4F7060788B8CE74D69F /* IOKit.framework in Frameworks */,
+				FDFEB756EAEDC7EACD846C45 /* CoreGraphics.framework in Frameworks */,
+				2BF9730B4B00291F233A01D0 /* AppKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E6ED13D5731E9406AA86A8F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F82781717D373299A86EA993 /* libBudHoldCore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0228508A8CD45B50162FAA25 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4CA039A45DCC7824A6582039 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		13971225AB1D5C57A05B19BF = {
+			isa = PBXGroup;
+			children = (
+				6D2ABD1808DCFED685EFE6FF /* BudHoldApp */,
+				AF3CEE383BCD46D6EB83F24C /* BudHoldCLI */,
+				2561A27661C12CE31B437B99 /* BudHoldCore */,
+				0228508A8CD45B50162FAA25 /* Resources */,
+				62264650A042E40C99E4BBD1 /* Frameworks */,
+				D3E3634B8ADCC2B1CD811E7E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2561A27661C12CE31B437B99 /* BudHoldCore */ = {
+			isa = PBXGroup;
+			children = (
+				12E6A59179401F62BD33D70C /* DisplayBrightnessController.swift */,
+				2DAA079DFAA3BFB2F067FBA8 /* LaunchAgentManager.swift */,
+				BBBC24B0F37FD2C3FA463387 /* LocalizationManager.swift */,
+				45672AF01920604F682BF886 /* PowerKeepAliveManager.swift */,
+				816AD1DE208FA9D272011458 /* SystemInfoService.swift */,
+			);
+			name = BudHoldCore;
+			path = Sources/BudHoldCore;
+			sourceTree = "<group>";
+		};
+		62264650A042E40C99E4BBD1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5CF77CD39537FA99F6800752 /* AppKit.framework */,
+				65617B94B520B5F703447FC3 /* CoreGraphics.framework */,
+				A2E715C2018C08D4C7F33EFC /* IOKit.framework */,
+				7E021FD04DD607354EE768C6 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6D2ABD1808DCFED685EFE6FF /* BudHoldApp */ = {
+			isa = PBXGroup;
+			children = (
+				1B752D56C8E1B6037944CCB7 /* AppViewModel.swift */,
+				D555B10848DD86EA8233233E /* BudHoldApp.swift */,
+				D923FC6DFE1318C2BF5811EA /* DashboardView.swift */,
+			);
+			name = BudHoldApp;
+			path = Sources/BudHoldApp;
+			sourceTree = "<group>";
+		};
+		AF3CEE383BCD46D6EB83F24C /* BudHoldCLI */ = {
+			isa = PBXGroup;
+			children = (
+				A7BA71B822203076229844CE /* main.swift */,
+			);
+			name = BudHoldCLI;
+			path = Sources/BudHoldCLI;
+			sourceTree = "<group>";
+		};
+		D3E3634B8ADCC2B1CD811E7E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F891B7D2F4C6BA099E40DC42 /* budhold */,
+				07963ED9E88C614C74C7847C /* BudHold.app */,
+				F924C73881D2DC599F5C417D /* libBudHoldCore.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ADE311421540A16B8796474E /* BudHoldCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C3EE0D539BCA5D3F8F8B3D37 /* Build configuration list for PBXNativeTarget "BudHoldCore" */;
+			buildPhases = (
+				11019800266BBE487BFDB41F /* Sources */,
+				E77C7E1E06B5F6C33041CEF1 /* Copy Swift Objective-C Interface Header */,
+				B82A6DA7BA2CA89280A6DA6E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BudHoldCore;
+			packageProductDependencies = (
+			);
+			productName = BudHoldCore;
+			productReference = F924C73881D2DC599F5C417D /* libBudHoldCore.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		AF0A77851C3D3D920E46DFE3 /* BudHold */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0DF01006351EC2851AD28758 /* Build configuration list for PBXNativeTarget "BudHold" */;
+			buildPhases = (
+				72F449C942203748CD30BA17 /* Sources */,
+				DC324303DCB0AAD07A625EA5 /* Resources */,
+				4690E1DCC818A943C5873BA8 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FF9B8910A048CA8F5C45BBAC /* PBXTargetDependency */,
+			);
+			name = BudHold;
+			packageProductDependencies = (
+			);
+			productName = BudHold;
+			productReference = 07963ED9E88C614C74C7847C /* BudHold.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B1722970ECBA2C924963D386 /* budhold */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3366D005AB99952C7144F7BA /* Build configuration list for PBXNativeTarget "budhold" */;
+			buildPhases = (
+				F3C2377272A42C09F4BB6034 /* Sources */,
+				E6ED13D5731E9406AA86A8F8 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B7F6AE3AB346B9A13AB5D93A /* PBXTargetDependency */,
+			);
+			name = budhold;
+			packageProductDependencies = (
+			);
+			productName = budhold;
+			productReference = F891B7D2F4C6BA099E40DC42 /* budhold */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0DF3F7462B0442CF99E9C5BF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = C0472F1E05B1091B7F4D798B /* Build configuration list for PBXProject "BudHold" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 13971225AB1D5C57A05B19BF;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D3E3634B8ADCC2B1CD811E7E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ADE311421540A16B8796474E /* BudHoldCore */,
+				AF0A77851C3D3D920E46DFE3 /* BudHold */,
+				B1722970ECBA2C924963D386 /* budhold */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC324303DCB0AAD07A625EA5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D86632ACD798FD1C27DEDF36 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E77C7E1E06B5F6C33041CEF1 /* Copy Swift Objective-C Interface Header */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(DERIVED_SOURCES_DIR)/$(SWIFT_OBJC_INTERFACE_HEADER_NAME)",
+			);
+			name = "Copy Swift Objective-C Interface Header";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/include/$(PRODUCT_MODULE_NAME)/$(SWIFT_OBJC_INTERFACE_HEADER_NAME)",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "ditto \"${SCRIPT_INPUT_FILE_0}\" \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		11019800266BBE487BFDB41F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F209AE14F8CA3AFE431E96F2 /* DisplayBrightnessController.swift in Sources */,
+				FC5A473A4A9386CD06B6D258 /* LaunchAgentManager.swift in Sources */,
+				E5DE8B57684E13ED2C1A9AA9 /* LocalizationManager.swift in Sources */,
+				0B1602A7E933A875206BE99D /* PowerKeepAliveManager.swift in Sources */,
+				F6084D24A08D16B579F3402D /* SystemInfoService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		72F449C942203748CD30BA17 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4142B1E4AF87EBD063460C92 /* AppViewModel.swift in Sources */,
+				CE0EDCBDEF0424FF5B329753 /* BudHoldApp.swift in Sources */,
+				A84A870C4C1D7952A548D4F0 /* DashboardView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3C2377272A42C09F4BB6034 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8858C7406A51805A388B7272 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B7F6AE3AB346B9A13AB5D93A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ADE311421540A16B8796474E /* BudHoldCore */;
+			targetProxy = E0133258DCF19F63F009FEBF /* PBXContainerItemProxy */;
+		};
+		FF9B8910A048CA8F5C45BBAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ADE311421540A16B8796474E /* BudHoldCore */;
+			targetProxy = B51ED81820120EFDD8C99537 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		16E13E996A92CE4791FBD0B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.budwk.app.budhold.core;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		2CEFD75519A041A9E87E6C7B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.10;
+			};
+			name = Release;
+		};
+		304D0E5D569A2A8B1D0C4709 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resources/BudHold.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = DPBBH6KM6G;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BudHold;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				"MARKETING_VERSION[sdk=macosx*]" = 1.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.budwk.app.budhold;
+				PRODUCT_NAME = BudHold;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		45F41275745CD2826AC8397A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.budwk.app.budhold.cli;
+				PRODUCT_NAME = budhold;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		462AB29A66333075C5037902 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.budwk.app.budhold.cli;
+				PRODUCT_NAME = budhold;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		80600702754558F62D0C78A6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resources/BudHold.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = DPBBH6KM6G;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BudHold;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.budwk.app.budhold;
+				PRODUCT_NAME = BudHold;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D35567A10987E6C3EA7345FD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.10;
+			};
+			name = Debug;
+		};
+		F9D064202E085378F0D86798 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.budwk.app.budhold.core;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0DF01006351EC2851AD28758 /* Build configuration list for PBXNativeTarget "BudHold" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				80600702754558F62D0C78A6 /* Debug */,
+				304D0E5D569A2A8B1D0C4709 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3366D005AB99952C7144F7BA /* Build configuration list for PBXNativeTarget "budhold" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				462AB29A66333075C5037902 /* Debug */,
+				45F41275745CD2826AC8397A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C0472F1E05B1091B7F4D798B /* Build configuration list for PBXProject "BudHold" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D35567A10987E6C3EA7345FD /* Debug */,
+				2CEFD75519A041A9E87E6C7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C3EE0D539BCA5D3F8F8B3D37 /* Build configuration list for PBXNativeTarget "BudHoldCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				16E13E996A92CE4791FBD0B5 /* Debug */,
+				F9D064202E085378F0D86798 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0DF3F7462B0442CF99E9C5BF /* Project object */;
+}

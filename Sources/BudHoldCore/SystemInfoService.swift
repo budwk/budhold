@@ -29,7 +29,6 @@ public struct PowerAndLidStatus: Sendable, Equatable {
     public let batteryPercentage: Int       // 电池电量百分比 (0-100)
     public let isCharging: Bool             // 是否正在充电
     public let displayBrightness: Float     // 当前主屏幕背光亮度 (0.0 - 1.0)
-    public let localIPs: [String]           // 本机局域网/虚拟网 IP 列表
 }
 
 public final class SystemInfoService {
@@ -78,7 +77,6 @@ public final class SystemInfoService {
         let displayAsleep = CGDisplayIsAsleep(CGMainDisplayID()) != 0
         let (isAC, pct, charging) = Self.readPowerSourceState()
         let brightness = DisplayBrightnessController.shared.getBrightness() ?? 1.0
-        let ips = Self.fetchLocalIPAddresses()
 
         return PowerAndLidStatus(
             isClamshellClosed: clamshell,
@@ -87,8 +85,7 @@ public final class SystemInfoService {
             isACPower: isAC,
             batteryPercentage: pct,
             isCharging: charging,
-            displayBrightness: brightness,
-            localIPs: ips
+            displayBrightness: brightness
         )
     }
 
@@ -143,43 +140,6 @@ public final class SystemInfoService {
         }
 
         return (isAC, percentage, isCharging)
-    }
-
-    public static func fetchLocalIPAddresses() -> [String] {
-        var addresses: [String] = []
-        var ifaddr: UnsafeMutablePointer<ifaddrs>?
-        guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else {
-            return addresses
-        }
-        defer { freeifaddrs(ifaddr) }
-
-        var ptr: UnsafeMutablePointer<ifaddrs>? = firstAddr
-        while let current = ptr {
-            let interface = current.pointee
-            let addrFamily = interface.ifa_addr.pointee.sa_family
-            if addrFamily == UInt8(AF_INET) {
-                let name = String(cString: interface.ifa_name)
-                if name != "lo0" {
-                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                    if getnameinfo(
-                        interface.ifa_addr,
-                        socklen_t(interface.ifa_addr.pointee.sa_len),
-                        &hostname,
-                        socklen_t(hostname.count),
-                        nil,
-                        socklen_t(0),
-                        NI_NUMERICHOST
-                    ) == 0 {
-                        let ip = String(cString: hostname)
-                        if !ip.hasPrefix("169.254.") && !addresses.contains(ip) {
-                            addresses.append("\(ip) (\(name))")
-                        }
-                    }
-                }
-            }
-            ptr = interface.ifa_next
-        }
-        return addresses
     }
 
     public static func sysctlString(_ name: String) -> String? {

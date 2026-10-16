@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudHold — macOS 防休眠与合盖保活工具 | Clamshell & Sleep Guard</title>
+    <meta name="description" content="BudHold 是一款原生 macOS 防休眠与合盖保活工具，支持合盖不休眠、防关屏黑屏、物理熄屏挂机与低电量保护，100% 纯本地运行。">
+    <style>
+        :root {
+            --bg: #f5f6f8;
+            --card-bg: #ffffff;
+            --text: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --accent-soft: rgba(16, 185, 129, 0.12);
+            --blue: #0071e3;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1115;
+                --card-bg: #181b22;
+                --text: #f5f5f7;
+                --text-secondary: #9ca3af;
+                --border: rgba(255, 255, 255, 0.09);
+                --accent: #10b981;
+                --accent-dark: #34d399;
+                --accent-soft: rgba(16, 185, 129, 0.16);
+                --blue: #2997ff;
+                --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: var(--blue);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+
+        /* 顶部导航 */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text);
+        }
+
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #0f2447, #14735c);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .lang-switch {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid transparent;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 48px 24px 72px;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            text-align: center;
+            padding: 36px 20px 56px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: clamp(30px, 4.5vw, 46px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .hero p {
+            max-width: 680px;
+            margin: 0 auto 28px;
+            font-size: 17px;
+            color: var(--text-secondary);
+        }
+
+        .meta-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .meta-pill {
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+        }
+
+        /* 功能特性网格 */
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 18px;
+            margin-bottom: 56px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 14px;
+        }
+
+        .card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 隐私政策与技术支持区块 */
+        .doc-section {
+            margin-bottom: 40px;
+            scroll-margin-top: 80px;
+        }
+
+        .doc-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+        }
+
+        .doc-card h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .doc-updated {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .doc-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 18px 0 8px;
+        }
+
+        .doc-card p, .doc-card ul {
+            font-size: 14.5px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .doc-card ul {
+            padding-left: 20px;
+        }
+
+        .doc-card li {
+            margin-bottom: 6px;
+        }
+
+        .contact-box {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 16px;
+            padding: 18px 22px;
+            border-radius: 12px;
+            background: var(--accent-soft);
+        }
+
+        .contact-email {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .btn-mail {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 9px 18px;
+            border-radius: 9px;
+        }
+
+        .btn-mail:hover {
+            color: #fff;
+            background: var(--accent-dark);
+            opacity: 1;
+        }
+
+        /* 底部版权与 ICP 备案 */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .footer-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        [data-lang="en"] {
+            display: none;
+        }
+
+        body.lang-en [data-lang="zh"] {
+            display: none;
+        }
+
+        body.lang-en [data-lang="en"] {
+            display: revert;
+        }
+
+        @media (max-width: 640px) {
+            .nav-links a.hide-mobile {
+                display: none;
+            }
+            .doc-card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav-container">
+        <a href="index.html" class="brand">
+            <span class="brand-icon">🛡️</span>
+            <span>BudHold</span>
+        </a>
+        <nav class="nav-links">
+            <a href="index.html">
+                <span data-lang="zh">首页</span>
+                <span data-lang="en">Home</span>
+            </a>
+            <a href="index.html#features" class="hide-mobile">
+                <span data-lang="zh">功能介绍</span>
+                <span data-lang="en">Features</span>
+            </a>
+            <a href="privacy.html">
+                <span data-lang="zh">隐私政策</span>
+                <span data-lang="en">Privacy Policy</span>
+            </a>
+            <a href="support.html">
+                <span data-lang="zh">技术支持</span>
+                <span data-lang="en">Support</span>
+            </a>
+            <a href="index.html#contact" class="hide-mobile">
+                <span data-lang="zh">联系我们</span>
+                <span data-lang="en">Contact</span>
+            </a>
+            <button class="lang-switch" onclick="toggleLang()" id="langBtn">EN / 中文</button>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <!-- Hero 介绍 -->
+    <section class="hero">
+        <div class="badge">
+            <span>●</span>
+            <span data-lang="zh">原生 macOS 防休眠与合盖保活工具</span>
+            <span data-lang="en">Native macOS Clamshell & Sleep Guard</span>
+        </div>
+
+        <h1 data-lang="zh">让 Mac 合上盖子或关屏也保持全速运行</h1>
+        <h1 data-lang="en">Keep Your Mac Awake with Lid Closed or Display Off</h1>
+
+        <p data-lang="zh">
+            BudHold 基于 Swift、SwiftUI 与 IOKit 原生构建，一键锁定内核休眠与显示渲染管线。无论是合盖挂机、长时间任务计算、远程桌面连接还是物理熄屏防窥，都能稳定保活。
+        </p>
+        <p data-lang="en">
+            Built natively with Swift, SwiftUI, and IOKit, BudHold prevents idle sleep and clamshell sleep with one click while keeping the GPU display pipeline awake.
+        </p>
+
+        <div class="meta-pills">
+            <span class="meta-pill">Bundle ID: com.budwk.app.budhold</span>
+            <span class="meta-pill">macOS 13.0+ (Apple Silicon & Intel)</span>
+            <span class="meta-pill" data-lang="zh">100% 纯离线本地运行 · 零网络权限</span>
+            <span class="meta-pill" data-lang="en">100% Offline & Local · Zero Network Access</span>
+        </div>
+    </section>
+
+    <!-- 软件功能介绍 -->
+    <section id="features" class="doc-section">
+        <h2 class="section-title">
+            <span>✨</span>
+            <span data-lang="zh">核心功能特性</span>
+            <span data-lang="en">Key Features</span>
+        </h2>
+
+        <div class="features-grid">
+            <div class="card">
+                <div class="card-icon">💻</div>
+                <h3 data-lang="zh">MacBook 合盖不休眠</h3>
+                <h3 data-lang="en">Clamshell Keep-Awake</h3>
+                <p data-lang="zh">
+                    支持内核级休眠锁控制（pmset SleepDisabled），即使拔掉外接显示器并合上笔记本盖子，系统依然持续高速运转，支持配置免密快捷切换。
+                </p>
+                <p data-lang="en">
+                    Prevents your MacBook from sleeping when the lid is closed, even without an external monitor attached. Supports optional passwordless switching.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🖥️</div>
+                <h3 data-lang="zh">防空闲睡眠与渲染保活</h3>
+                <h3 data-lang="en">Idle & Display Pipeline Guard</h3>
+                <p data-lang="zh">
+                    通过 IOKit 电源断言与显示帧缓冲唤醒机制，防止关屏或合盖后系统进入空闲休眠，避免图形渲染管线挂起导致的画面黑屏。
+                </p>
+                <p data-lang="en">
+                    Uses IOKit power assertions to prevent system idle sleep and keep the display framebuffer active so remote desktop sessions never go black.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🌑</div>
+                <h3 data-lang="zh">物理熄屏挂机（背光 0%）</h3>
+                <h3 data-lang="en">Display Blackout Mode (0%)</h3>
+                <p data-lang="zh">
+                    在开盖状态下将屏幕物理背光直接降至 0%（纯黑屏省电防窥），同时保持 GPU 渲染活跃；随时按下键盘 Esc 键或亮度键即可立即恢复屏幕亮度。
+                </p>
+                <p data-lang="en">
+                    Turns physical screen backlight down to 0% for privacy and power saving while keeping the system awake. Press Esc anytime to restore brightness.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🔋</div>
+                <h3 data-lang="zh">低电量安全保护与定时保活</h3>
+                <h3 data-lang="en">Low-Battery Guard & Timer</h3>
+                <p data-lang="zh">
+                    内置电池低电量保护（默认电量 ≤ 20% 自动解除合盖不休眠锁），防止放入背包后积热或亏电；支持 1 / 2 / 4 / 8 / 24 小时定时或始终保持。
+                </p>
+                <p data-lang="en">
+                    Automatically restores default lid sleep when running on battery below 20% to prevent overheating. Includes flexible 1h–24h timers.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🎨</div>
+                <h3 data-lang="zh">状态栏常驻与深浅主题自适应</h3>
+                <h3 data-lang="en">Menu Bar & Adaptive Theme</h3>
+                <p data-lang="zh">
+                    关闭窗口后自动隐藏底部 Dock 图标并常驻顶部菜单栏；支持跟随系统自动切换浅色/深色外观，以及中英双语无缝切换。
+                </p>
+                <p data-lang="en">
+                    Lives quietly in your macOS menu bar with zero Dock clutter when closed. Adapts automatically to Light/Dark mode and Chinese/English.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🔒</div>
+                <h3 data-lang="zh">纯本地运行 · 零数据收集</h3>
+                <h3 data-lang="en">100% Local · Zero Data Collection</h3>
+                <p data-lang="zh">
+                    应用不包含任何网络请求权限，不收集、不存储、不上传任何个人隐私或设备数据，所有偏好设置仅保存在您的 Mac 本地。
+                </p>
+                <p data-lang="en">
+                    Requests zero network permissions. No analytics, no tracking, and no data collection—everything stays strictly on your Mac.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 隐私政策 -->
+    <section id="privacy" class="doc-section">
+        <div class="doc-card">
+            <h2 data-lang="zh">🔒 隐私政策 (Privacy Policy)</h2>
+            <h2 data-lang="en">🔒 Privacy Policy</h2>
+            <div class="doc-updated">
+                <span data-lang="zh">生效日期：2026年10月16日 | 适用应用：BudHold (com.budwk.app.budhold)</span>
+                <span data-lang="en">Effective Date: October 16, 2026 | Application: BudHold (com.budwk.app.budhold)</span>
+            </div>
+
+            <p data-lang="zh">
+                <strong>BudHold</strong> 非常重视用户的隐私与数据安全。本应用是一款运行于 macOS 平台的纯本地系统电源与防休眠工具，我们郑重承诺：<strong>BudHold 不会收集、存储、共享或上传您的任何个人身份信息或设备数据。</strong>
+            </p>
+            <p data-lang="en">
+                <strong>BudHold</strong> respects and protects your privacy. BudHold is a 100% offline, local utility for macOS power management. <strong>We do not collect, store, share, or transmit any personal information or device data.</strong>
+            </p>
+
+            <h3 data-lang="zh">1. 零网络访问与数据收集</h3>
+            <h3 data-lang="en">1. Zero Network Access & No Data Collection</h3>
+            <ul data-lang="zh">
+                <li><strong>无网络权限：</strong>BudHold 未声明且不使用任何网络连接权限（无联网能力），应用不会向任何服务器发送请求。</li>
+                <li><strong>无第三方统计或广告 SDK：</strong>应用内未集成任何第三方分析、崩溃统计、追踪器或广告代码。</li>
+            </ul>
+            <ul data-lang="en">
+                <li><strong>No Network Entitlement:</strong> BudHold does not request network access and never communicates with external servers.</li>
+                <li><strong>No Third-Party SDKs:</strong> No analytics, crash reporting, tracking, or advertising SDKs are included.</li>
+            </ul>
+
+            <h3 data-lang="zh">2. 本地硬件状态读取说明</h3>
+            <h3 data-lang="en">2. Local System Information Usage</h3>
+            <p data-lang="zh">
+                为了在控制台界面向您展示防休眠状态并执行低电量保护，应用会通过 macOS 系统接口（IOKit）在本地实时读取以下状态：
+            </p>
+            <p data-lang="en">
+                To display current sleep guard status and provide low-battery safety protection, the app reads the following states locally via macOS APIs:
+            </p>
+            <ul data-lang="zh">
+                <li>当前 macOS 系统版本号与芯片架构信息；</li>
+                <li>笔记本盒盖开合状态（Clamshell State）与显示器休眠状态；</li>
+                <li>当前电源供电类型（外接电源 / 电池）与电池剩余电量百分比。</li>
+            </ul>
+            <ul data-lang="en">
+                <li>macOS version and hardware architecture;</li>
+                <li>MacBook lid state (clamshell open/closed) and display power state;</li>
+                <li>Power source (AC Power / Battery) and battery percentage for low-battery protection.</li>
+            </ul>
+            <p data-lang="zh">上述信息仅在您的设备内存中用于界面实时显示与本地逻辑判断，绝不会被记录或外传。</p>
+            <p data-lang="en">All such information is processed strictly in memory on your Mac and never leaves your device.</p>
+
+            <h3 data-lang="zh">3. 本地偏好设置存储</h3>
+            <h3 data-lang="en">3. Local Preferences</h3>
+            <p data-lang="zh">
+                您的界面语言、保活时长、低电量保护开关等配置项仅通过 macOS 标准的 <code>UserDefaults</code> 保存在您的本机电脑上，您可随时卸载应用以彻底清除。
+            </p>
+            <p data-lang="en">
+                Your app settings (such as language preference, timer duration, and low-battery threshold) are stored locally on your Mac using standard macOS <code>UserDefaults</code>.
+            </p>
+        </div>
+    </section>
+
+    <!-- 技术支持与联系方式 -->
+    <section id="contact" class="doc-section">
+        <div class="doc-card">
+            <h2 data-lang="zh">📬 技术支持与联系方式 (Support & Contact)</h2>
+            <h2 data-lang="en">📬 Technical Support & Contact</h2>
+            <p data-lang="zh">
+                如果您在使用 BudHold 的过程中遇到任何问题、有功能建议或需要技术支持，欢迎随时通过电子邮件与我们联系，我们通常会在 24~48 小时内回复。
+            </p>
+            <p data-lang="en">
+                If you have any questions, feedback, feature requests, or need technical assistance with BudHold, please feel free to contact us via email:
+            </p>
+
+            <div class="contact-box">
+                <div>
+                    <div style="font-size: 13px; color: var(--text-secondary);" data-lang="zh">官方支持与反馈邮箱</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);" data-lang="en">Official Support Email</div>
+                    <div class="contact-email">wizzer@qq.com</div>
+                </div>
+                <a href="mailto:wizzer@qq.com?subject=BudHold%20Support%20Feedback" class="btn-mail">
+                    <span data-lang="zh">发送邮件 (wizzer@qq.com)</span>
+                    <span data-lang="en">Email Us (wizzer@qq.com)</span>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-links">
+            <a href="index.html">
+                <span data-lang="zh">首页</span>
+                <span data-lang="en">Home</span>
+            </a>
+            <span>·</span>
+            <a href="privacy.html">
+                <span data-lang="zh">隐私政策</span>
+                <span data-lang="en">Privacy Policy</span>
+            </a>
+            <span>·</span>
+            <a href="support.html">
+                <span data-lang="zh">技术支持</span>
+                <span data-lang="en">Support</span>
+            </a>
+            <span>·</span>
+            <a href="mailto:wizzer@qq.com">wizzer@qq.com</a>
+        </div>
+        <div>Copyright © 2026 BudHold. All rights reserved.</div>
+        <div>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary);">
+                皖ICP备15001937号-4
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    function toggleLang() {
+        document.body.classList.toggle('lang-en');
+        const isEn = document.body.classList.contains('lang-en');
+        localStorage.setItem('budhold_site_lang', isEn ? 'en' : 'zh');
+    }
+    (function () {
+        const saved = localStorage.getItem('budhold_site_lang');
+        if (saved === 'en' || (!saved && !navigator.language.toLowerCase().startsWith('zh'))) {
+            document.body.classList.add('lang-en');
+        }
+    })();
+</script>
+
+</body>
+</html>

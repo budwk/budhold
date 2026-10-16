@@ -15,12 +15,12 @@ public enum KeepAwakeDuration: Int, CaseIterable, Identifiable, Sendable {
 
     public var title: String {
         switch self {
-        case .infinite: return "始终保持（不限时）"
-        case .oneHour: return "1 小时"
-        case .twoHours: return "2 小时"
-        case .fourHours: return "4 小时"
-        case .eightHours: return "8 小时"
-        case .twentyFourHours: return "24 小时"
+        case .infinite: return L10n.tr("始终保持（不限时）", "Indefinitely (Always On)")
+        case .oneHour: return L10n.tr("1 小时", "1 Hour")
+        case .twoHours: return L10n.tr("2 小时", "2 Hours")
+        case .fourHours: return L10n.tr("4 小时", "4 Hours")
+        case .eightHours: return L10n.tr("8 小时", "8 Hours")
+        case .twentyFourHours: return L10n.tr("24 小时", "24 Hours")
         }
     }
 }
@@ -41,9 +41,6 @@ public struct LogEntry: Identifiable, Sendable {
 public final class PowerKeepAliveManager {
     public static let shared = PowerKeepAliveManager()
 
-    private static let kRustDeskMonitoringEnabledKey = "budhold.rustDeskMonitoringEnabled"
-    private static let kRustDeskWatchdogEnabledKey = "budhold.rustDeskWatchdogEnabled"
-
     private var systemSleepAssertionID: IOPMAssertionID = 0
     private var displaySleepAssertionID: IOPMAssertionID = 0
     private var hasSystemAssertion: Bool = false
@@ -53,20 +50,6 @@ public final class PowerKeepAliveManager {
     public private(set) var isIdleKeepAwakeActive: Bool = false
     public private(set) var isClamshellKeepAwakeActive: Bool = false
     public var keepDisplayRendererAwake: Bool = true
-
-    /// RustDesk 监控与集成（非必须项，默认关闭，用户可按需开启）
-    public var rustDeskMonitoringEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(rustDeskMonitoringEnabled, forKey: Self.kRustDeskMonitoringEnabledKey)
-        }
-    }
-
-    /// RustDesk 进程自动拉起守护（仅在 rustDeskMonitoringEnabled 开启时生效）
-    public var rustDeskWatchdogEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(rustDeskWatchdogEnabled, forKey: Self.kRustDeskWatchdogEnabledKey)
-        }
-    }
 
     public var lowBatteryAutoRestoreEnabled: Bool = true
     public var lowBatteryThreshold: Int = 20
@@ -80,8 +63,6 @@ public final class PowerKeepAliveManager {
     private let sudoersFilePath = "/etc/sudoers.d/budhold"
 
     private init() {
-        self.rustDeskMonitoringEnabled = UserDefaults.standard.object(forKey: Self.kRustDeskMonitoringEnabledKey) as? Bool ?? false
-        self.rustDeskWatchdogEnabled = UserDefaults.standard.object(forKey: Self.kRustDeskWatchdogEnabledKey) as? Bool ?? true
         syncInitialKernelState()
     }
 
@@ -114,25 +95,22 @@ public final class PowerKeepAliveManager {
         // 3. 开启内核级合盖不休眠 (pmset -a disablesleep 1 tcpkeepalive 1 womp 1)
         let (clamshellOk, errMsg) = setKernelClamshellSleepDisabled(true)
 
-        // 4. 若用户按需开启了 RustDesk 监控与守护，则检查并确保 RustDesk 运行
-        if rustDeskMonitoringEnabled && rustDeskWatchdogEnabled {
-            let rdStatus = RustDeskMonitor.shared.fetchStatus(enabled: true)
-            if rdStatus.isInstalled && !rdStatus.isServerRunning {
-                RustDeskMonitor.shared.launchRustDesk()
-                appendLog("已按需自动拉起 RustDesk 远程服务")
-            }
-        }
-
         if idleOk && clamshellOk {
-            let msg = "已开启「合盖+关屏不休眠」全天候模式，电脑合盖或关屏均保持运行"
+            let msg = L10n.tr(
+                "已开启「合盖+关屏不休眠」全天候模式，电脑合盖或关屏均保持运行",
+                "Full Keep-Awake enabled: Mac will stay awake with lid closed or display off"
+            )
             appendLog(msg)
             return (true, msg)
         } else if idleOk && !clamshellOk {
-            let msg = "已开启防空闲/关屏睡眠，但「合盖不休眠」需要管理员授权：\(errMsg)"
+            let msg = L10n.tr(
+                "已开启防空闲/关屏睡眠，但「合盖不休眠」需要管理员授权：\(errMsg)",
+                "Idle sleep prevented, but Clamshell Keep-Awake requires admin privilege: \(errMsg)"
+            )
             appendLog(msg, isWarning: true)
             return (false, msg)
         } else {
-            let msg = "开启防休眠失败：\(errMsg)"
+            let msg = L10n.tr("开启防休眠失败：\(errMsg)", "Failed to enable Keep-Awake: \(errMsg)")
             appendLog(msg, isWarning: true)
             return (false, msg)
         }
@@ -149,14 +127,20 @@ public final class PowerKeepAliveManager {
         if sleepDisabled {
             let (ok, err) = setKernelClamshellSleepDisabled(false)
             if !ok {
-                let msg = "已释放 IOKit 防睡眠锁，但恢复合盖睡眠失败：\(err)"
+                let msg = L10n.tr(
+                    "已释放 IOKit 防睡眠锁，但恢复合盖睡眠失败：\(err)",
+                    "IOKit assertions released, but failed to restore lid sleep: \(err)"
+                )
                 appendLog(msg, isWarning: true)
                 return (false, msg)
             }
         } else {
             isClamshellKeepAwakeActive = false
         }
-        let msg = "已关闭防休眠保护，系统已恢复默认合盖与空闲睡眠策略"
+        let msg = L10n.tr(
+            "已关闭防休眠保护，系统已恢复默认合盖与空闲睡眠策略",
+            "Keep-Awake disabled. Default system and lid sleep restored"
+        )
         appendLog(msg)
         return (true, msg)
     }
@@ -197,7 +181,10 @@ public final class PowerKeepAliveManager {
         }
 
         isIdleKeepAwakeActive = hasSystemAssertion
-        appendLog("IOKit 防休眠断言已激活 (系统防休眠: \(hasSystemAssertion ? "是" : "否"), 显示渲染保持: \(hasDisplayAssertion ? "是" : "否"))")
+        appendLog(L10n.tr(
+            "IOKit 防休眠断言已激活 (系统防休眠: \(hasSystemAssertion ? "是" : "否"), 显示渲染保持: \(hasDisplayAssertion ? "是" : "否"))",
+            "IOKit assertions active (System: \(hasSystemAssertion ? "Yes" : "No"), Display: \(hasDisplayAssertion ? "Yes" : "No"))"
+        ))
         onStateChanged?()
         return hasSystemAssertion
     }
@@ -207,7 +194,20 @@ public final class PowerKeepAliveManager {
         stopCaffeinateProcess()
         expirationDate = nil
         isIdleKeepAwakeActive = false
-        appendLog("IOKit 防空闲与防关屏休眠断言已释放")
+        appendLog(L10n.tr("IOKit 防空闲与防关屏休眠断言已释放", "IOKit idle & display sleep assertions released"))
+        onStateChanged?()
+    }
+
+    public func updateDuration(_ duration: KeepAwakeDuration) {
+        if duration == .infinite {
+            expirationDate = nil
+        } else if isIdleKeepAwakeActive || isClamshellKeepAwakeActive {
+            expirationDate = Date().addingTimeInterval(TimeInterval(duration.rawValue))
+        }
+        if isIdleKeepAwakeActive {
+            startCaffeinateProcess(preventDisplaySleep: hasDisplayAssertion, durationSeconds: duration.rawValue)
+        }
+        appendLog(L10n.tr("已更新保活时长设置：\(duration.title)", "Keep-Awake duration updated: \(duration.title)"))
         onStateChanged?()
     }
 
@@ -283,24 +283,24 @@ public final class PowerKeepAliveManager {
         """
         let (ok, err) = runWithPrivileges(script)
         if ok {
-            appendLog("已成功安装 pmset 免密授权规则 (\(sudoersFilePath))")
+            appendLog(L10n.tr("已成功安装 pmset 免密授权规则 (\(sudoersFilePath))", "Installed passwordless sudo rule for pmset (\(sudoersFilePath))"))
             onStateChanged?()
-            return (true, "免密授权配置成功，后续切换合盖不休眠将无需输入密码")
+            return (true, L10n.tr("免密授权配置成功，后续切换合盖不休眠将无需输入密码", "Passwordless sudo configured successfully"))
         } else {
-            appendLog("配置免密授权失败：\(err)", isWarning: true)
+            appendLog(L10n.tr("配置免密授权失败：\(err)", "Failed to configure passwordless sudo: \(err)"), isWarning: true)
             return (false, err)
         }
     }
 
     public func removePasswordlessSudoers() -> (success: Bool, message: String) {
         guard FileManager.default.fileExists(atPath: sudoersFilePath) else {
-            return (true, "免密规则未安装")
+            return (true, L10n.tr("免密规则未安装", "Passwordless rule not installed"))
         }
         let (ok, err) = runWithPrivileges("/bin/rm -f \(sudoersFilePath)")
         if ok {
-            appendLog("已移除 pmset 免密授权规则")
+            appendLog(L10n.tr("已移除 pmset 免密授权规则", "Removed passwordless sudo rule for pmset"))
             onStateChanged?()
-            return (true, "已移除免密授权规则")
+            return (true, L10n.tr("已移除免密授权规则", "Removed passwordless sudo rule"))
         } else {
             return (false, err)
         }
@@ -322,7 +322,10 @@ public final class PowerKeepAliveManager {
         if runSudoNoPassword(cmd) {
             let (_, actualDisabled) = SystemInfoService.readIOPMRootDomainState()
             isClamshellKeepAwakeActive = actualDisabled
-            appendLog(disabled ? "已启用内核级合盖不休眠 (SleepDisabled = Yes)" : "已恢复系统默认合盖休眠 (SleepDisabled = No)")
+            appendLog(disabled
+                ? L10n.tr("已启用内核级合盖不休眠 (SleepDisabled = Yes)", "Kernel Clamshell Keep-Awake enabled (SleepDisabled = Yes)")
+                : L10n.tr("已恢复系统默认合盖休眠 (SleepDisabled = No)", "Default lid sleep restored (SleepDisabled = No)")
+            )
             onStateChanged?()
             return (true, "")
         }
@@ -332,9 +335,12 @@ public final class PowerKeepAliveManager {
         let (_, actualDisabled) = SystemInfoService.readIOPMRootDomainState()
         isClamshellKeepAwakeActive = actualDisabled
         if ok {
-            appendLog(disabled ? "已通过管理员授权启用合盖不休眠 (SleepDisabled = Yes)" : "已恢复系统默认合盖休眠 (SleepDisabled = No)")
+            appendLog(disabled
+                ? L10n.tr("已通过管理员授权启用合盖不休眠 (SleepDisabled = Yes)", "Clamshell Keep-Awake enabled with admin authorization (SleepDisabled = Yes)")
+                : L10n.tr("已恢复系统默认合盖休眠 (SleepDisabled = No)", "Default lid sleep restored (SleepDisabled = No)")
+            )
         } else {
-            appendLog("执行 pmset 失败：\(err)", isWarning: true)
+            appendLog(L10n.tr("执行 pmset 失败：\(err)", "pmset execution failed: \(err)"), isWarning: true)
         }
         onStateChanged?()
         return (ok, err)
@@ -405,7 +411,7 @@ public final class PowerKeepAliveManager {
         }
     }
 
-    // MARK: - 第三层：周期性守护巡检（合盖/关屏渲染保活、可选 RustDesk 守护、低电量安全恢复、定时到期检查）
+    // MARK: - 第三层：周期性守护巡检（合盖/关屏渲染保活、低电量安全恢复、定时到期检查）
 
     public func performPeriodicTick() {
         let status = SystemInfoService.shared.fetchPowerAndLidStatus()
@@ -413,7 +419,7 @@ public final class PowerKeepAliveManager {
 
         // 1. 检查定时是否到期
         if let exp = expirationDate, Date() >= exp {
-            appendLog("定时防休眠时间已到，正在自动恢复系统默认休眠设置", isWarning: true)
+            appendLog(L10n.tr("定时防休眠时间已到，正在自动恢复系统默认休眠设置", "Scheduled Keep-Awake duration ended. Restoring default sleep settings"), isWarning: true)
             expirationDate = nil
             _ = disableAllKeepAwake()
             return
@@ -422,7 +428,10 @@ public final class PowerKeepAliveManager {
         // 2. 低电量安全保护：如果在用电池且电量 <= 阈值，自动关闭合盖不休眠防止背包过热/亏电
         if lowBatteryAutoRestoreEnabled && !status.isACPower && !status.isCharging && status.batteryPercentage <= lowBatteryThreshold {
             if status.isKernelSleepDisabled {
-                appendLog("⚠️ 检测到电池供电且电量低至 \(status.batteryPercentage)% (≤\(lowBatteryThreshold)%)，触发防闷烧安全保护，自动恢复合盖睡眠！", isWarning: true)
+                appendLog(L10n.tr(
+                    "⚠️ 检测到电池供电且电量低至 \(status.batteryPercentage)% (≤\(lowBatteryThreshold)%)，触发防闷烧安全保护，自动恢复合盖睡眠！",
+                    "⚠️ Battery on \(status.batteryPercentage)% (≤\(lowBatteryThreshold)%). Safety protection triggered: restoring lid sleep!"
+                ), isWarning: true)
                 _ = setKernelClamshellSleepDisabled(false)
             }
         }
@@ -431,20 +440,6 @@ public final class PowerKeepAliveManager {
         if (isIdleKeepAwakeActive || isClamshellKeepAwakeActive) && keepDisplayRendererAwake {
             if status.isDisplayAsleep || status.isClamshellClosed {
                 DisplayBrightnessController.shared.wakeDisplayFramebuffer()
-            }
-        }
-
-        // 4. 可选：RustDesk 进程守护与远控连接唤醒（仅当用户启用了 RustDesk 监控时执行）
-        if rustDeskMonitoringEnabled {
-            let rdStatus = RustDeskMonitor.shared.fetchStatus(enabled: true)
-            if rustDeskWatchdogEnabled && (isIdleKeepAwakeActive || isClamshellKeepAwakeActive) {
-                if rdStatus.isInstalled && !rdStatus.isServerRunning {
-                    appendLog("检测到 RustDesk 服务未运行，正在自动重启 RustDesk...")
-                    RustDeskMonitor.shared.launchRustDesk()
-                }
-                if rdStatus.activeConnectionCount > 0 && status.isDisplayAsleep {
-                    DisplayBrightnessController.shared.wakeDisplayFramebuffer()
-                }
             }
         }
     }

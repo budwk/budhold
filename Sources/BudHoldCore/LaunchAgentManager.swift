@@ -1,10 +1,10 @@
 import Foundation
 
-/// 管理 macOS 开机自启动 (~/Library/LaunchAgents/com.budhold.app.plist)
+/// 管理 macOS 开机自启动 (~/Library/LaunchAgents/com.budwk.app.budhold.plist)
 public final class LaunchAgentManager {
     public static let shared = LaunchAgentManager()
 
-    public let label = "com.budhold.app"
+    public let label = "com.budwk.app.budhold"
 
     public var plistURL: URL {
         FileManager.default.homeDirectoryForCurrentUser

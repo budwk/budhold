@@ -23,10 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let vm = AppViewModel.shared
 
-        if CommandLine.arguments.contains("--rustdesk") {
-            vm.rustDeskMonitoringEnabled = true
-        }
-
         // 监听系统关机/注销事件，避免阻止 macOS 正常重启或关机
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.willPowerOffNotification,
@@ -44,7 +40,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         openDashboardWindow()
 
         vm.onStatusBarNeedsUpdate = { [weak self] in
+            self?.setupApplicationMainMenu()
             self?.updateStatusBarAppearance()
+        }
+        vm.onLanguageChanged = { [weak self] in
+            self?.adjustWindowWidthForCurrentLanguage(animated: true)
         }
 
         // 如果带有 --auto-enable 参数启动，则自动激活全天候防休眠模式
@@ -64,17 +64,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return .terminateNow
         }
 
-        // 非顶部图标触发的退出（例如底部 Dock 右键菜单点击退出、或按 ⌘Q）：
-        // 隐藏主窗口并转为顶部状态栏后台运行，不退出程序
         mainWindow?.orderOut(nil)
         NSApp.setActivationPolicy(.accessory)
-        PowerKeepAliveManager.shared.appendLog("已隐藏主窗口与底部图标，BudHold 仍在顶部菜单栏后台运行（如需彻底退出请点击顶部图标 -> 退出 BudHold）")
+        PowerKeepAliveManager.shared.appendLog(L10n.tr(
+            "已隐藏主窗口与底部图标，BudHold 仍在顶部菜单栏后台运行",
+            "Window and Dock icon hidden. BudHold is running in the menu bar"
+        ))
         return .terminateCancel
     }
 
-    /// 点击窗口左上角红色关闭按钮时：仅隐藏窗口，不退出软件
+    /// 点击窗口左上角红色关闭按钮时：隐藏窗口并移除底部 Dock 图标，仅保留顶部状态栏图标
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         sender.orderOut(nil)
+        NSApp.setActivationPolicy(.accessory)
         return false
     }
 
@@ -87,7 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    // MARK: - 构建纯净的应用主菜单（不生成任何多余的「设置」弹窗）
+    // MARK: - 构建纯净的应用主菜单
     private func setupApplicationMainMenu() {
         let mainMenu = NSMenu()
 
@@ -98,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         appMenuItem.submenu = appMenu
 
         let showWindowItem = NSMenuItem(
-            title: "显示 BudHold 主控制台",
+            title: L10n.tr("显示 BudHold 主控制台", "Show BudHold Dashboard"),
             action: #selector(openDashboardWindow),
             keyEquivalent: "o"
         )
@@ -108,7 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         appMenu.addItem(.separator())
 
         let hideToBarItem = NSMenuItem(
-            title: "隐藏到底部栏外（仅保留顶部图标）",
+            title: L10n.tr("关闭窗口并隐藏底部图标", "Close Window & Hide Dock Icon"),
             action: #selector(hideWindowAndDockIcon),
             keyEquivalent: "w"
         )
@@ -117,7 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // ⌘Q 走 NSApp.terminate，会被 applicationShouldTerminate 拦截为转入后台
         let dockQuitItem = NSMenuItem(
-            title: "关闭窗口并转入后台运行",
+            title: L10n.tr("转入后台运行", "Hide to Menu Bar"),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
@@ -126,11 +128,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // 2. 编辑菜单（确保复制粘贴快捷键正常）
         let editMenuItem = NSMenuItem()
         mainMenu.addItem(editMenuItem)
-        let editMenu = NSMenu(title: "编辑")
+        let editMenu = NSMenu(title: L10n.tr("编辑", "Edit"))
         editMenuItem.submenu = editMenu
-        editMenu.addItem(withTitle: "拷贝", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        editMenu.addItem(withTitle: "粘贴", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        editMenu.addItem(withTitle: "全选", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editMenu.addItem(withTitle: L10n.tr("拷贝", "Copy"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: L10n.tr("粘贴", "Paste"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: L10n.tr("全选", "Select All"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
 
         NSApp.mainMenu = mainMenu
     }
@@ -149,51 +151,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let statusPrefix: String
         if vm.isFullRemoteModeActive {
             symbolName = "bolt.shield.fill"
-            statusPrefix = "合盖不休眠"
-        } else if vm.isIdleKeepAwakeActive {
+            statusPrefix = vm.tr("合盖不休眠", "Clamshell Awake")
+        } else if vm.isIdleKeepAwakeActive || vm.isClamshellKeepAwakeActive {
             symbolName = "cup.and.saucer.fill"
-            statusPrefix = "防休眠"
+            statusPrefix = vm.tr("防休眠", "Awake")
         } else {
             symbolName = "moon.zzz"
-            statusPrefix = "BudHold"
+            statusPrefix = ""
         }
 
         button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "BudHold")
-        button.imagePosition = .imageLeading
-        button.title = " \(statusPrefix)"
+        if statusPrefix.isEmpty {
+            button.title = ""
+            button.imagePosition = .imageOnly
+        } else {
+            button.imagePosition = .imageLeading
+            button.title = " \(statusPrefix)"
+        }
 
         let menu = NSMenu()
 
-        let osHeader = NSMenuItem(
-            title: "🖥️ 系统版本: \(vm.osInfo.productName) \(vm.osInfo.productVersion) (Build \(vm.osInfo.buildVersion))",
-            action: nil,
-            keyEquivalent: ""
-        )
-        osHeader.isEnabled = false
-        menu.addItem(osHeader)
-
+        let lidStateText = vm.powerStatus.isClamshellClosed ? vm.tr("已合盖", "Closed") : vm.tr("开盖", "Open")
+        let powerSourceText = vm.powerStatus.isACPower ? vm.tr("外接电源", "AC") : vm.tr("电池", "Battery")
         let lidHeader = NSMenuItem(
-            title: "💻 盒盖状态: \(vm.powerStatus.isClamshellClosed ? "已合盖" : "开盖") | 电源: \(vm.powerStatus.isACPower ? "外接电源" : "电池") \(vm.powerStatus.batteryPercentage)%",
+            title: vm.tr(
+                "💻 盒盖: \(lidStateText)  |  电源: \(powerSourceText) \(vm.powerStatus.batteryPercentage)%",
+                "💻 Lid: \(lidStateText)  |  Power: \(powerSourceText) \(vm.powerStatus.batteryPercentage)%"
+            ),
             action: nil,
             keyEquivalent: ""
         )
         lidHeader.isEnabled = false
         menu.addItem(lidHeader)
 
-        if vm.rustDeskMonitoringEnabled {
-            let rdHeader = NSMenuItem(
-                title: "🔗 RustDesk ID: \(vm.rustDeskStatus.deviceID) (\(vm.rustDeskStatus.isServerRunning ? "在线" : "未运行"))",
-                action: #selector(copyRustDeskIDFromMenu),
-                keyEquivalent: ""
-            )
-            rdHeader.target = self
-            menu.addItem(rdHeader)
-        }
-
         menu.addItem(.separator())
 
         let fullToggleItem = NSMenuItem(
-            title: vm.isFullRemoteModeActive ? "✅ 已开启：合盖+关屏不休眠（点击关闭）" : "🚀 一键开启：合盖+关屏不休眠",
+            title: vm.isFullRemoteModeActive
+                ? vm.tr("✅ 已开启：合盖+关屏不休眠（点击关闭）", "✅ Active: Clamshell & Display Awake (Click to Stop)")
+                : vm.tr("🚀 一键开启：合盖+关屏不休眠", "🚀 Enable Clamshell & Display Keep-Awake"),
             action: #selector(toggleFullModeFromMenu),
             keyEquivalent: "k"
         )
@@ -201,7 +197,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(fullToggleItem)
 
         let clamshellItem = NSMenuItem(
-            title: vm.isClamshellKeepAwakeActive ? "🔒 合盖不休眠锁 (SleepDisabled): 已启用" : "🔓 合盖不休眠锁 (SleepDisabled): 未启用",
+            title: vm.isClamshellKeepAwakeActive
+                ? vm.tr("🔒 合盖不休眠锁: 已启用", "🔒 Clamshell Sleep Lock: Enabled")
+                : vm.tr("🔓 合盖不休眠锁: 未启用", "🔓 Clamshell Sleep Lock: Disabled"),
             action: #selector(toggleClamshellFromMenu),
             keyEquivalent: ""
         )
@@ -209,7 +207,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(clamshellItem)
 
         let idleItem = NSMenuItem(
-            title: vm.isIdleKeepAwakeActive ? "🟢 防空闲与关屏渲染断言: 已激活" : "⚪ 防空闲与关屏渲染断言: 未激活",
+            title: vm.isIdleKeepAwakeActive
+                ? vm.tr("🟢 防空闲与关屏渲染: 已激活", "🟢 Idle & Display Awake: Active")
+                : vm.tr("⚪ 防空闲与关屏渲染: 未激活", "⚪ Idle & Display Awake: Inactive"),
             action: #selector(toggleIdleFromMenu),
             keyEquivalent: ""
         )
@@ -217,37 +217,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(idleItem)
 
         let blackoutItem = NSMenuItem(
-            title: vm.isBlackoutModeActive ? "☀️ 恢复屏幕背光亮度" : "🌑 物理熄屏挂机（背光 0%，保持远控画面）",
+            title: vm.isBlackoutModeActive
+                ? vm.tr("☀️ 恢复屏幕背光亮度", "☀️ Restore Screen Brightness")
+                : vm.tr("🌑 物理熄屏挂机（背光 0%）", "🌑 Display Blackout (Backlight 0%)"),
             action: #selector(toggleBlackoutFromMenu),
             keyEquivalent: "b"
         )
         blackoutItem.target = self
         menu.addItem(blackoutItem)
 
-        menu.addItem(.separator())
-
-        let rdMonitorToggleItem = NSMenuItem(
-            title: vm.rustDeskMonitoringEnabled ? "📡 RustDesk 监控（按需项）: 已启用" : "📡 RustDesk 监控（按需项）: 未启用",
-            action: #selector(toggleRustDeskMonitorFromMenu),
+        // 快速设置保活时长子菜单
+        let durationParentItem = NSMenuItem(
+            title: vm.tr("⏱️ 保活时长: \(vm.selectedDuration.title)", "⏱️ Duration: \(vm.selectedDuration.title)"),
+            action: nil,
             keyEquivalent: ""
         )
-        rdMonitorToggleItem.target = self
-        menu.addItem(rdMonitorToggleItem)
-
-        if vm.rustDeskMonitoringEnabled {
-            let openRustDeskItem = NSMenuItem(
-                title: "打开 RustDesk 客户端",
-                action: #selector(openRustDeskFromMenu),
+        let durationSubmenu = NSMenu(title: vm.tr("保活时长", "Duration"))
+        for duration in KeepAwakeDuration.allCases {
+            let item = NSMenuItem(
+                title: duration.title,
+                action: #selector(selectDurationFromMenu(_:)),
                 keyEquivalent: ""
             )
-            openRustDeskItem.target = self
-            menu.addItem(openRustDeskItem)
+            item.target = self
+            item.tag = duration.rawValue
+            item.state = (vm.selectedDuration == duration) ? .on : .off
+            durationSubmenu.addItem(item)
         }
+        durationParentItem.submenu = durationSubmenu
+        menu.addItem(durationParentItem)
 
         menu.addItem(.separator())
 
         let openDashboardItem = NSMenuItem(
-            title: "打开 BudHold 主控制台...",
+            title: vm.tr("打开主控制台...", "Open Dashboard..."),
             action: #selector(openDashboardWindow),
             keyEquivalent: ""
         )
@@ -258,7 +261,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // 仅顶部菜单栏的此按钮才会触发真退出（不绑定 ⌘Q 防止误按退出）
         let quitItem = NSMenuItem(
-            title: "退出 BudHold（彻底退出）",
+            title: vm.tr("退出 BudHold", "Quit BudHold"),
             action: #selector(quitAppFromStatusBar),
             keyEquivalent: ""
         )
@@ -297,16 +300,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         AppViewModel.shared.toggleBlackoutMode()
     }
 
-    @objc private func toggleRustDeskMonitorFromMenu() {
-        AppViewModel.shared.rustDeskMonitoringEnabled.toggle()
-    }
-
-    @objc private func copyRustDeskIDFromMenu() {
-        AppViewModel.shared.copyRustDeskID()
-    }
-
-    @objc private func openRustDeskFromMenu() {
-        AppViewModel.shared.launchRustDesk()
+    @objc private func selectDurationFromMenu(_ sender: NSMenuItem) {
+        if let duration = KeepAwakeDuration(rawValue: sender.tag) {
+            AppViewModel.shared.setDuration(duration)
+        }
     }
 
     @objc private func hideWindowAndDockIcon() {
@@ -321,6 +318,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
 
         if let window = mainWindow {
+            adjustWindowWidthForCurrentLanguage(animated: false)
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
@@ -329,14 +327,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let contentView = DashboardView(vm: AppViewModel.shared)
         let hostingController = NSHostingController(rootView: contentView)
 
-        let os = SystemInfoService.shared.osInfo
+        let initialWidth: CGFloat = L10n.shared.isChinese ? 760 : 880
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 820, height: 740),
+            contentRect: NSRect(x: 0, y: 0, width: initialWidth, height: 640),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
-        window.title = "BudHold — macOS 防休眠与合盖保活工具 (\(os.productName) \(os.productVersion))"
+        window.title = "BudHold"
         window.contentViewController = hostingController
         window.center()
         window.isReleasedWhenClosed = false
@@ -344,6 +342,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         self.mainWindow = window
+    }
+
+    private func adjustWindowWidthForCurrentLanguage(animated: Bool) {
+        guard let window = mainWindow else { return }
+        let targetWidth: CGFloat = L10n.shared.isChinese ? 760 : 880
+        var frame = window.frame
+        let delta = targetWidth - frame.size.width
+        guard abs(delta) > 1 else { return }
+        frame.origin.x -= delta / 2.0
+        frame.size.width = targetWidth
+        window.setFrame(frame, display: true, animate: animated)
     }
 
     @objc private func quitAppFromStatusBar() {

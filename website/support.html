@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技术支持与常见问题 | Support — BudHold</title>
+    <meta name="description" content="BudHold macOS 防休眠与合盖保活工具官方技术支持、常见问题解答与联系方式。">
+    <style>
+        :root {
+            --bg: #f5f6f8;
+            --card-bg: #ffffff;
+            --text: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --accent-soft: rgba(16, 185, 129, 0.12);
+            --blue: #0071e3;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1115;
+                --card-bg: #181b22;
+                --text: #f5f5f7;
+                --text-secondary: #9ca3af;
+                --border: rgba(255, 255, 255, 0.09);
+                --accent: #10b981;
+                --accent-dark: #34d399;
+                --accent-soft: rgba(16, 185, 129, 0.16);
+                --blue: #2997ff;
+                --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        a {
+            color: var(--blue);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        a:hover { opacity: 0.8; }
+
+        /* 顶部导航（与首页完全一致） */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text);
+        }
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #0f2447, #14735c);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-links a { color: var(--text-secondary); }
+        .nav-links a:hover, .nav-links a.active { color: var(--text); }
+        .lang-switch {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid transparent;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 48px 24px 72px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        h2 { font-size: 19px; margin: 22px 0 10px; }
+        h3 { font-size: 16px; margin: 16px 0 6px; color: var(--text); }
+        p, ul { font-size: 15px; color: var(--text-secondary); margin-bottom: 12px; }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13.5px;
+            background: var(--accent-soft);
+            padding: 2px 6px;
+            border-radius: 5px;
+        }
+
+        /* 底部版权与 ICP 备案（与首页完全一致） */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .footer-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+        .footer-links a { color: var(--text-secondary); }
+        .footer-links a:hover { color: var(--text); }
+
+        [data-lang="en"] { display: none; }
+        body.lang-en [data-lang="zh"] { display: none; }
+        body.lang-en [data-lang="en"] { display: revert; }
+
+        @media (max-width: 640px) {
+            .nav-links a.hide-mobile { display: none; }
+            .card { padding: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav-container">
+        <a href="index.html" class="brand">
+            <span class="brand-icon">🛡️</span>
+            <span>BudHold</span>
+        </a>
+        <nav class="nav-links">
+            <a href="index.html">
+                <span data-lang="zh">首页</span>
+                <span data-lang="en">Home</span>
+            </a>
+            <a href="index.html#features" class="hide-mobile">
+                <span data-lang="zh">功能介绍</span>
+                <span data-lang="en">Features</span>
+            </a>
+            <a href="privacy.html">
+                <span data-lang="zh">隐私政策</span>
+                <span data-lang="en">Privacy Policy</span>
+            </a>
+            <a href="support.html" class="active">
+                <span data-lang="zh">技术支持</span>
+                <span data-lang="en">Support</span>
+            </a>
+            <a href="index.html#contact" class="hide-mobile">
+                <span data-lang="zh">联系我们</span>
+                <span data-lang="en">Contact</span>
+            </a>
+            <button class="lang-switch" onclick="toggleLang()" id="langBtn">EN / 中文</button>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="card">
+        <h1 data-lang="zh">BudHold 技术支持与常见问题</h1>
+        <h1 data-lang="en">BudHold Support & FAQ</h1>
+        <p data-lang="zh">如果您在使用过程中遇到问题，请先参考以下常见解答，或直接发送邮件联系我们。</p>
+        <p data-lang="en">Find answers to common questions below or reach out to our support team directly via email.</p>
+
+        <h3 data-lang="zh">Q1：开启「物理熄屏挂机（背光 0%）」后屏幕全黑，如何恢复屏幕亮度？</h3>
+        <h3 data-lang="en">Q1: How do I restore screen brightness after enabling Display Blackout (0%)?</h3>
+        <p data-lang="zh">
+            物理熄屏模式会将屏幕背光降至 0% 以省电防窥，此时电脑仍在正常运转。您只需按下键盘左上角的 <code>Esc</code> 键、按键盘上的屏幕亮度增加键（<code>F2</code>）或使用快捷键 <code>⌘B</code> 即可立即恢复原本的屏幕亮度。
+        </p>
+        <p data-lang="en">
+            Simply press the <code>Esc</code> key on your keyboard, press the Brightness Up key (<code>F2</code>), or use the shortcut <code>⌘B</code> to immediately restore your screen brightness.
+        </p>
+
+        <h3 data-lang="zh">Q2：点击窗口左上角关闭按钮后，如何彻底退出 BudHold？</h3>
+        <h3 data-lang="en">Q2: How do I completely quit BudHold after closing the main window?</h3>
+        <p data-lang="zh">
+            为了防止防休眠被误关，关闭窗口时 BudHold 会隐藏底部 Dock 图标并转入屏幕右上角菜单栏常驻。如需彻底退出，请点击屏幕顶部菜单栏中的 BudHold 图标，选择 <strong>「退出 BudHold」</strong>。
+        </p>
+        <p data-lang="en">
+            Closing the window hides the Dock icon and keeps BudHold running in the top menu bar. To quit completely, click the BudHold icon in the macOS menu bar and select <strong>"Quit BudHold"</strong>.
+        </p>
+
+        <h3 data-lang="zh">Q3：安全注意事项（合盖装包提醒）</h3>
+        <h3 data-lang="en">Q3: Safety Note When Traveling with a Closed MacBook</h3>
+        <p data-lang="zh">
+            开启「合盖不休眠」后，MacBook 合上盖子仍会保持运行。<strong>请勿在开启合盖不休眠且未关闭的情况下将电脑放入密闭背包或内胆包中</strong>，以免积热。建议保持开启「低电量保护（≤20% 自动恢复休眠）」。
+        </p>
+        <p data-lang="en">
+            When Clamshell Keep-Awake is active, your MacBook remains running with the lid closed. <strong>Do not place your MacBook into a closed sleeve or backpack while Clamshell Keep-Awake is active</strong> to avoid overheating.
+        </p>
+
+        <h2 data-lang="zh">联系技术支持</h2>
+        <h2 data-lang="en">Contact Support</h2>
+        <p data-lang="zh">
+            支持邮箱：<a href="mailto:wizzer@qq.com"><strong>wizzer@qq.com</strong></a>
+        </p>
+        <p data-lang="en">
+            Support Email: <a href="mailto:wizzer@qq.com"><strong>wizzer@qq.com</strong></a>
+        </p>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-links">
+            <a href="index.html">
+                <span data-lang="zh">首页</span>
+                <span data-lang="en">Home</span>
+            </a>
+            <span>·</span>
+            <a href="privacy.html">
+                <span data-lang="zh">隐私政策</span>
+                <span data-lang="en">Privacy Policy</span>
+            </a>
+            <span>·</span>
+            <a href="support.html">
+                <span data-lang="zh">技术支持</span>
+                <span data-lang="en">Support</span>
+            </a>
+            <span>·</span>
+            <a href="mailto:wizzer@qq.com">wizzer@qq.com</a>
+        </div>
+        <div>Copyright © 2026 BudHold. All rights reserved.</div>
+        <div>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary);">
+                皖ICP备15001937号-4
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    function toggleLang() {
+        document.body.classList.toggle('lang-en');
+        localStorage.setItem('budhold_site_lang', document.body.classList.contains('lang-en') ? 'en' : 'zh');
+    }
+    (function () {
+        const saved = localStorage.getItem('budhold_site_lang');
+        if (saved === 'en' || (!saved && !navigator.language.toLowerCase().startsWith('zh'))) {
+            document.body.classList.add('lang-en');
+        }
+    })();
+</script>
+
+</body>
+</html>

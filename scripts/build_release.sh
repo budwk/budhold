@@ -74,7 +74,7 @@ chmod +x "$PKG_ROOT/usr/local/bin/budhold"
 PKG_PATH="$RELEASE_DIR/BudHold-v${VERSION}-macOS-universal.pkg"
 pkgbuild \
     --root "$PKG_ROOT" \
-    --identifier "com.budhold.pkg" \
+    --identifier "com.budwk.app.budhold.pkg" \
     --version "$VERSION" \
     --install-location "/" \
     "$PKG_PATH" >/dev/null
@@ -106,9 +106,8 @@ cat > "$RELEASE_DIR/RELEASE_NOTES.md" <<EOF
 
 ### ✨ 功能亮点
 - **MacBook 合盖 + 关屏不休眠**：结合 \`IOKit\` 电源断言与内核级 \`SleepDisabled\` 锁，即使拔掉外接显示器并合上盖子，网络与图形渲染依旧保持 100% 运行。
-- **远程桌面防黑屏**：周期性唤醒显示器帧缓冲 (\`IOPMAssertionDeclareUserActivity\`)，解决合盖或关屏后远程桌面（RustDesk / VNC / 屏幕共享）画面黑屏问题。
+- **远程桌面防黑屏**：周期性唤醒显示器帧缓冲 (\`IOPMAssertionDeclareUserActivity\`)，解决合盖或关屏后远程桌面（VNC / 屏幕共享等）画面黑屏问题。
 - **物理熄屏挂机模式**：支持在开盖时将屏幕背光降为 \`0%\`（纯黑屏防窥省电），同时保持 GPU 渲染活跃，按 \`Esc\` 键即可恢复亮度。
-- **RustDesk 按需监控（可选非必须）**：支持按需启用 RustDesk 状态监控与进程自动守护。
 - **免密切换与电池防闷烧保护**：支持一键配置 \`pmset\` 免密切换，以及电池供电低电量（≤20%）自动恢复合盖睡眠。
 
 ### 📥 下载与安装说明
