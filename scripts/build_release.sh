@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_DIR"
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 RELEASE_DIR="$PROJECT_DIR/release"
 DIST_DIR="$PROJECT_DIR/dist"
 
